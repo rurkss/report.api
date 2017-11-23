@@ -1,66 +1,40 @@
-FROM nebo15/alpine-elixir:latest
-MAINTAINER Nebo#15 support@nebo15.com
+FROM edenlabllc/elixir:1.5.2 as builder
 
-# Configure environment variables and other settings
-ENV MIX_ENV=prod \
-    APP_NAME=report_api \
-    APP_PORT=4000
+ARG APP_NAME
+ARG APP_VERSION
 
-WORKDIR ${HOME}
+ADD . /app
 
-# Required for elixir_make to work, which is used by some very popular libs
-RUN apk add --update --no-cache make
+WORKDIR /app
 
-# Install and compile project dependencies
-COPY mix.* ./
-RUN mix do deps.get, deps.compile
+ENV MIX_ENV=prod
 
-# Add project sources
-COPY . .
+RUN mix do \
+      local.hex --force, \
+      local.rebar --force, \
+      deps.get, \
+      deps.compile, \
+      release
 
-# Compile project for Erlang VM
-RUN mix do compile, release --verbose
+FROM alpine:edge
 
-# Reduce container size
-RUN apk del --no-cache make
+ARG APP_NAME
+ARG APP_VERSION
 
-# Move release to /opt/$APP_NAME
-RUN set -e; \
-    mkdir -p /var/log && \
-    mkdir -p $HOME/priv && \
-    mkdir -p /opt/${APP_NAME}/log && \
-    mkdir -p /opt/${APP_NAME}/var && \
-    mkdir -p /opt/${APP_NAME}/bin/hooks && \
-    cp -R $HOME/priv /opt/${APP_NAME}/ && \
-    cp -R $HOME/bin/hooks /opt/${APP_NAME}/bin/ && \
-    APP_TARBALL=$(find $HOME/_build/$MIX_ENV/rel/${APP_NAME}/releases -maxdepth 2 -name ${APP_NAME}.tar.gz) && \
-    cp $APP_TARBALL /opt/${APP_NAME}/ && \
-    cd /opt/${APP_NAME} && \
-    tar -xzf ${APP_NAME}.tar.gz && \
-    rm ${APP_NAME}.tar.gz && \
-    rm -rf /opt/app/* && \
-    rm -rf /opt/app && \
-    chmod -R 777 /opt/${APP_NAME}/log && \
-    chmod -R 777 /opt/${APP_NAME}/releases && \
-    chmod -R 777 /opt/${APP_NAME}/var && \
-    chmod -R 777 /var/log
+RUN apk add --no-cache \
+      ncurses-libs \
+      zlib \
+      ca-certificates \
+      openssl \
+      bash
 
-# Change user to "default"
-USER default
+WORKDIR /app
 
-# Allow to read ENV vars for mix configs
-ENV REPLACE_OS_VARS=true
+COPY --from=builder /app/_build/prod/rel/${APP_NAME}/releases/${APP_VERSION}/${APP_NAME}.tar.gz /app
 
-# Exposes this port from the docker container to the host machine
-EXPOSE ${APP_PORT}
+RUN tar -xzf ${APP_NAME}.tar.gz; rm ${APP_NAME}.tar.gz
 
-# Change workdir to a released directory
-WORKDIR /opt
+ENV REPLACE_OS_VARS=true \
+    APP=${APP_NAME}
 
-# Pre-run hook that allows you to add initialization scripts.
-# All Docker hooks should be located in bin/hooks directory.
-RUN $APP_NAME/bin/hooks/pre-run.sh
-
-# The command to run when this image starts up.
-# To run migrations on start set DB_MIGRATE=true env when starting container.
-CMD $APP_NAME/bin/$APP_NAME foreground
+CMD ./bin/${APP} foreground
