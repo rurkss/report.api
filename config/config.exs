@@ -62,7 +62,10 @@ config :report_api,
 config :ssl, protocol_version: :"tlsv1.2"
 
 # Configures Elixir's Logger
-config :logger, :console, format: "$message\n", level: :info
+config :logger, :console,
+  format: "$message\n",
+  handle_otp_reports: true,
+  level: :info
 
 config :report_api, Report.MediaStorage,
   endpoint: {:system, "MEDIA_STORAGE_ENDPOINT", "http://api-svc.ael"},
