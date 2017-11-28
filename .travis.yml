@@ -13,9 +13,9 @@ addons:
       - postgresql-9.5-postgis-2.3
       - docker-ce
 elixir:
-  - 1.5.1
+  - 1.5.2
 otp_release:
-  - 19.3
+  - 20.1
 notifications:
   slack:
     rooms:
@@ -39,8 +39,6 @@ branches:
   except:
     - /^[0-9]*\.[0-9]*\.[0-9]*/
 before_install:
-  - rm -f erlang-19.3-nonroot.tar.bz2
-  - rm -f v1.4.4.zip
   # Expose MQ and DB to Docker container
   - sudo ./bin/ci/init-db.sh
 before_script:
