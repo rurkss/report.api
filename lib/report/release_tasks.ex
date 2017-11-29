@@ -60,10 +60,10 @@ defmodule Report.ReleaseTasks do
   end
 
   defp migrations_path(app),
-    do: Path.join([priv_dir(app), "repo", "migrations"])
+    do: Application.app_dir(app, "priv/repo/migrations")
 
   defp seed_path(app),
-    do: Path.join([priv_dir(app), "repo", "seeds.exs"])
+    do: Application.app_dir(app, "priv/repo/seeds.exs")
 
   def setup_pg_logical! do
     pg_logical = Confex.get_env(:report_api, :pg_logical_node)
