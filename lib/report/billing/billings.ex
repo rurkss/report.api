@@ -14,8 +14,6 @@ defmodule Report.Billings do
   alias Report.MediaStorage
   alias Report.BillingLog
 
-  @maturity_age Confex.get_env(:report_api, :maturity_age)
-  @declarations_bucket Confex.fetch_env!(:report_api, Report.MediaStorage)[:declarations_bucket]
   @inconsistent_data_error "Inconsistent data"
   @sign_service_error "Sign service error"
 
@@ -154,7 +152,8 @@ defmodule Report.Billings do
   end
 
   defp maybe_child(%Ecto.Changeset{changes: changes}, red_list) do
-    if changes.person_age < @maturity_age do
+    maturity_age = Confex.get_env(:report_api, :maturity_age)
+    if changes.person_age < maturity_age do
       RedLists.find_msp_by_type(red_list, "child")
     else
       RedLists.find_msp_by_type(red_list, "general")
@@ -215,7 +214,8 @@ defmodule Report.Billings do
   end
 
   defp get_signed_declaration_url(id) do
-    MediaStorage.create_signed_url("GET", @declarations_bucket, "signed_content", id)
+    declarations_bucket = Confex.fetch_env!(:report_api, Report.MediaStorage)[:declarations_bucket]
+    MediaStorage.create_signed_url("GET", declarations_bucket, "signed_content", id)
   end
 
   defp validate_declaration(declaration, url) do
