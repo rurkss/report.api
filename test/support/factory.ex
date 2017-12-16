@@ -123,7 +123,10 @@ defmodule Report.Factory do
         }
       ],
       phones: [%{"type": "MOBILE", "number": "+380503410870"}],
-      mountain_group: Enum.at(bool_list, :rand.uniform(2) - 1)
+      mountain_group: Enum.at(bool_list, :rand.uniform(2) - 1),
+      location: %Geo.Point{
+        coordinates: {50.12332, 30.12332}
+      },
     }
   end
 

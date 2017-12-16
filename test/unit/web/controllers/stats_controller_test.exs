@@ -106,65 +106,236 @@ defmodule Report.Web.StatsControllerTest do
     :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
   end
 
-  test "get divisions map stats", %{conn: conn} do
-    conn = get conn, stats_path(conn, :divisions_map)
-    assert response(conn, 422)
+  describe "get divisions" do
+    test "get divisions map stats", %{conn: conn} do
+      conn = get conn, stats_path(conn, :divisions_map)
+      assert response(conn, 200)
 
-    conn = get conn, stats_path(conn, :divisions_map,
-      lefttop_latitude: "50.32423",
-      lefttop_longitude: "30.1233",
-      rightbottom_latitude: "50.32423",
-    )
-    assert response(conn, 422)
+      conn = get conn, stats_path(conn, :divisions_map,
+        lefttop_latitude: "50.32423",
+        lefttop_longitude: "30.1233",
+        rightbottom_latitude: "50.32423",
+      )
+      assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :divisions_map,
-      lefttop_latitude: "invalid",
-      lefttop_longitude: "50.32423",
-      rightbottom_latitude: "50.32423",
-      rightbottom_longitude: "50.32423"
-    )
-    assert response(conn, 422)
+      conn = get conn, stats_path(conn, :divisions_map,
+        lefttop_latitude: "invalid",
+        lefttop_longitude: "50.32423",
+        rightbottom_latitude: "50.32423",
+        rightbottom_longitude: "50.32423"
+      )
+      assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :divisions_map,
-      lefttop_latitude: "50.32423",
-      lefttop_longitude: "30.1233",
-      rightbottom_latitude: "50.32423",
-      rightbottom_longitude: "50.32423"
-    )
-    assert response(conn, 200)
+      conn = get conn, stats_path(conn, :divisions_map,
+        lefttop_latitude: "50.32423",
+        lefttop_longitude: "30.1233",
+        rightbottom_latitude: "50.32423",
+        rightbottom_longitude: "50.32423",
+      )
+      assert response(conn, 200)
 
-    conn = get conn, stats_path(conn, :divisions_map,
-      type: "invalid",
-      lefttop_latitude: "50.32423",
-      lefttop_longitude: "30.1233",
-      rightbottom_latitude: "50.32423",
-      rightbottom_longitude: "50.32423"
-    )
-    assert response(conn, 422)
+      conn = get conn, stats_path(conn, :divisions_map,
+        type: "invalid",
+        lefttop_latitude: "50.32423",
+        lefttop_longitude: "30.1233",
+        rightbottom_latitude: "50.32423",
+        rightbottom_longitude: "50.32423",
+      )
+      assert response(conn, 422)
 
-    insert_fixtures()
-    conn = get conn, stats_path(conn, :divisions_map,
-      lefttop_latitude: 45,
-      lefttop_longitude: 35,
-      rightbottom_latitude: 55,
-      rightbottom_longitude: 25,
-      page_size: 3,
-    )
-    assert map_stats = response(conn, 200)
-    map_stats = Poison.decode!(map_stats)
+      insert_fixtures()
+      conn = get conn, stats_path(conn, :divisions_map,
+        lefttop_latitude: 45,
+        lefttop_longitude: 35,
+        rightbottom_latitude: 55,
+        rightbottom_longitude: 25,
+        page_size: 3,
+      )
+      assert map_stats = response(conn, 200)
+      map_stats = Poison.decode!(map_stats)
 
-    schema =
-      "test/data/stats/divisions_map_response.json"
-      |> File.read!()
-      |> Poison.decode!()
+      schema =
+        "test/data/stats/divisions_map_response.json"
+        |> File.read!()
+        |> Poison.decode!()
 
-    :ok = NExJsonSchema.Validator.validate(schema, map_stats)
+      :ok = NExJsonSchema.Validator.validate(schema, map_stats)
 
-    assert 3 == Enum.count(map_stats["data"])
-    assert is_map(map_stats["paging"])
-    assert 2 == map_stats["paging"]["total_pages"]
-    assert 3 == map_stats["paging"]["page_size"]
-    assert 4 == map_stats["paging"]["total_entries"]
+      assert 3 == Enum.count(map_stats["data"])
+      assert is_map(map_stats["paging"])
+      assert 2 == map_stats["paging"]["total_pages"]
+      assert 3 == map_stats["paging"]["page_size"]
+      assert 4 == map_stats["paging"]["total_entries"]
+    end
+
+    test "search divisions by location", %{conn: conn} do
+      legal_entity = insert(:legal_entity)
+
+      location1 = %Geo.Point{coordinates: {30.512653, 50.469034}}
+      location2 = %Geo.Point{coordinates: {30.515710, 50.468802}}
+      location3 = %Geo.Point{coordinates: {30.520335, 50.466036}}
+      division1 = insert(:division, legal_entity: legal_entity, location: location1)
+      division2 = insert(:division, legal_entity: legal_entity, location: location2)
+      insert(:division, legal_entity: legal_entity, location: location3)
+
+      params = %{
+        "lefttop_longitude" => 30.509370,
+        "lefttop_latitude" => 50.471165,
+        "rightbottom_longitude" => 30.517845,
+        "rightbottom_latitude" => 50.466781,
+      }
+
+      conn1 = get conn, stats_path(conn, :divisions_map), params
+      resp = json_response(conn1, 200)["data"]
+
+      assert 2 == length(resp)
+      Enum.each(resp, fn %{"id" => id} ->
+        assert id in [division1.id, division2.id]
+      end)
+    end
+
+    test "search divisions by legal entity name and edrpou", %{conn: conn} do
+      legal_entity = insert(:legal_entity, name: "У Михалыча", edrpou: "10020030")
+      division1 = insert(:division, legal_entity: legal_entity)
+
+      legal_entity2 = insert(:legal_entity, name: "Синяк", edrpou: "20030040")
+      division2 = insert(:division, legal_entity: legal_entity2)
+
+      params = %{legal_entity_name: legal_entity.name, legal_entity_edrpou: legal_entity.edrpou}
+      resp = conn
+             |> get(stats_path(conn, :divisions_map), params)
+             |> json_response(200)
+             |> Map.get("data")
+
+      assert 1 == length(resp)
+      assert division1.id == hd(resp)["id"]
+
+      # name and edrpou from different legal entitites
+      params = %{legal_entity_name: legal_entity.name, legal_entity_edrpou: legal_entity2.edrpou}
+      assert [] == conn
+                   |> get(stats_path(conn, :divisions_map), params)
+                   |> json_response(200)
+                   |> Map.get("data")
+
+      params = %{legal_entity_name: legal_entity2.name, legal_entity_edrpou: legal_entity2.edrpou}
+      resp = conn
+             |> get(stats_path(conn, :divisions_map), params)
+             |> json_response(200)
+             |> Map.get("data")
+
+      assert 1 == length(resp)
+      assert division2.id == hd(resp)["id"]
+
+      # name and edrpou from different legal entitites
+      params = %{legal_entity_name: legal_entity2.name, legal_entity_edrpou: legal_entity.edrpou}
+      assert [] == conn
+                   |> get(stats_path(conn, :divisions_map), params)
+                   |> json_response(200)
+                   |> Map.get("data")
+    end
+
+    test "search divisions by address", %{conn: conn} do
+      legal_entity = insert(:legal_entity)
+      address1 = [
+        %{
+          "type": "REGISTRATION",
+          "area": "Одеська",
+          "region": "Бердичівський",
+          "settlement": "Одеса",
+        },
+        %{
+          "type": "RESIDENCE",
+          "area": "Київська",
+          "region": "Київський",
+          "settlement": "Київ",
+        }
+      ]
+      address2 = [
+        %{
+          "type": "REGISTRATION",
+          "area": "Львівська",
+          "region": "Жмеринковський",
+          "settlement": "Солотвино",
+        },
+        %{
+          "type": "RESIDENCE",
+          "area": "Київська",
+          "region": "Броварський",
+          "settlement": "Бровари",
+        }
+      ]
+      address3 = [
+        %{
+          "type": "REGISTRATION",
+          "area": "Київська",
+          "region": "Київський",
+          "settlement": "Київ",
+        },
+        %{
+          "type": "RESIDENCE",
+          "area": "Польтавська",
+          "region": "Броварський",
+          "settlement": "Лубни",
+        }
+      ]
+      division1 = insert(:division, legal_entity: legal_entity, addresses: address1)
+      division2 = insert(:division, legal_entity: legal_entity, addresses: address2)
+      division3 = insert(:division, legal_entity: legal_entity, addresses: address3)
+
+      # By all address params
+      params = %{area: "Київська", region: "Київський", settlement: "Київ"}
+      resp = conn
+             |> get(stats_path(conn, :divisions_map), params)
+             |> json_response(200)
+             |> Map.get("data")
+      assert 1 == length(resp)
+      assert division1.id == hd(resp)["id"]
+
+      # search by area. Assert that division with registration area "Київська" not in response
+      params = %{area: "Київська"}
+      resp = conn
+             |> get(stats_path(conn, :divisions_map), params)
+             |> json_response(200)
+             |> Map.get("data")
+      assert 2 == length(resp)
+      Enum.each(
+        resp,
+        fn (%{"id" => id}) ->
+          assert id in [division1.id, division2.id]
+        end
+      )
+
+      # search by region
+      params = %{region: "Броварський"}
+      resp = conn
+             |> get(stats_path(conn, :divisions_map), params)
+             |> json_response(200)
+             |> Map.get("data")
+      assert 2 == length(resp)
+      Enum.each(
+        resp,
+        fn (%{"id" => id}) ->
+          assert id in [division2.id, division3.id]
+        end
+      )
+
+      # search by settlement
+      params = %{settlement: "Лубни"}
+      resp = conn
+             |> get(stats_path(conn, :divisions_map), params)
+             |> json_response(200)
+             |> Map.get("data")
+      assert 1 == length(resp)
+      assert division3.id == hd(resp)["id"]
+
+      # Not Found
+      params = %{area: "Київська", settlement: "Лубни"}
+      assert [] =
+               conn
+               |> get(stats_path(conn, :divisions_map), params)
+               |> json_response(200)
+               |> Map.get("data")
+    end
   end
 
   defp insert_fixtures do
