@@ -14,6 +14,12 @@ defmodule Report.Stats.DivisionsMapRequest do
   schema "divisions_map" do
     field :type, :string
     field :name, :string
+    field :area, :string
+    field :region, :string
+    field :settlement, :string
+    field :legal_entity_id, Ecto.UUID
+    field :legal_entity_name, :string
+    field :legal_entity_edrpou, :string
     field :lefttop_latitude, :float
     field :lefttop_longitude, :float
     field :rightbottom_latitude, :float
