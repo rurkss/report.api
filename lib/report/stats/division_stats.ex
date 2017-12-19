@@ -39,7 +39,12 @@ defmodule Report.Stats.DivisionStats do
     |> join(:inner, [d], l in assoc(d, :legal_entity))
     |> query_legal_entity_name(get_change(changeset, :legal_entity_name))
     |> query_legal_entity_edrpou(get_change(changeset, :legal_entity_edrpou))
-    |> join(:inner, [..., l], e in Employee, e.legal_entity_id == l.id and e.employee_type == ^@type_owner)
+    |> join(
+         :inner,
+         [..., l],
+         e in Employee,
+         e.legal_entity_id == l.id and e.employee_type == ^@type_owner and e.is_active == true
+       )
     |> join(:inner, [..., e], innm in assoc(e, :party))
     |> preload([..., l, e, p], [legal_entity: {l, employees: {e, party: p}}])
     |> Repo.paginate(params)
