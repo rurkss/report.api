@@ -363,6 +363,7 @@ defmodule Report.Web.StatsControllerTest do
   defp insert_fixtures do
     legal_entity = insert(:legal_entity)
     insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
+    insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner), is_active: false)
     insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}}, legal_entity: legal_entity)
     insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}}, legal_entity: legal_entity)
     insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}}, legal_entity: legal_entity)

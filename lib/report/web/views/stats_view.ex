@@ -108,7 +108,7 @@ defmodule Report.Web.StatsView do
     Map.put(view, :owner, owner)
   end
 
-  defp render_coordinates(%{coordinates: {longitude, latitude}} = a) do
+  defp render_coordinates(%{coordinates: {longitude, latitude}}) do
     %{
       "latitude" => latitude,
       "longitude" => longitude,
