@@ -4,6 +4,7 @@ defmodule Report.Integration.DivisionStatsTest do
   use Report.Web.ConnCase
 
   alias Report.Replica.Division
+  alias Report.Replica.Employee
   alias Report.Stats.DivisionStats
   alias Report.Stats.DivisionsMapRequest
   alias Scrivener.Page
@@ -51,6 +52,7 @@ defmodule Report.Integration.DivisionStatsTest do
 
   defp insert_fixtures do
     legal_entity = insert(:legal_entity)
+    insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
     params = [
       legal_entity_id: legal_entity.id,
       location: %Geo.Point{coordinates: {30.1233, 50.32423}},

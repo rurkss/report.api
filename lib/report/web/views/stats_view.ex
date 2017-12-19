@@ -3,6 +3,37 @@ defmodule Report.Web.StatsView do
 
   use Report.Web, :view
 
+  @legal_entities_fields ~w(
+    id
+    name
+    short_name
+    public_name
+    type
+    position
+    legal_form
+    owner_property_type
+    edrpou
+    kveds
+    addresses
+    phones
+    email
+    mis_verified
+    nhs_verified
+  )a
+
+  @employee_fields ~w(
+    id
+    position
+    employee_type
+  )a
+
+  @party_fields ~w(
+    id
+    first_name
+    last_name
+    second_name
+  )a
+
   def render("index.json", %{stats: stats}) do
     stats
   end
@@ -45,7 +76,8 @@ defmodule Report.Web.StatsView do
       "contacts" => %{
         "email" => division.email,
         "phones" => division.phones,
-      }
+      },
+      "legal_entity" => render_one(division.legal_entity, __MODULE__, "legal_entity.json", as: :legal_entity)
     }
   end
 
@@ -60,7 +92,22 @@ defmodule Report.Web.StatsView do
     stats
   end
 
+  def render("legal_entity.json", %{legal_entity: legal_entity}) do
+    legal_entity
+    |> Map.take(@legal_entities_fields)
+    |> render_legal_entity_owner(legal_entity)
+  end
+
   def render("divisions_map.json", %{divisions: divisions}) do
     render_many(divisions, __MODULE__, "division_details.json")
+  end
+
+  defp render_legal_entity_owner(view, %{employees: [employee]} = legal_entity) do
+    owner =
+      employee
+      |> Map.take(@employee_fields)
+      |> Map.put(:party, Map.take(employee.party, @party_fields))
+
+    Map.put(view, :owner, owner)
   end
 end

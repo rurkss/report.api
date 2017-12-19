@@ -3,6 +3,8 @@ defmodule Report.Replica.Employee do
 
   use Ecto.Schema
 
+  @type_owner "OWNER"
+
   @primary_key {:id, :binary_id, autogenerate: true}
 
   schema "employees" do
@@ -25,4 +27,6 @@ defmodule Report.Replica.Employee do
 
     timestamps(type: :utc_datetime)
   end
+
+  def type(:owner), do: @type_owner
 end

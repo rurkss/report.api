@@ -31,7 +31,7 @@
           },
           "coordinates": {
             "type": "object",
-            "items": {
+            "properties": {
               "latitude": {
                 "type": "number"
               },
@@ -39,6 +39,112 @@
                 "type": "number"
               }
             }
+          },
+          "legal_entity": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string"
+              },
+              "short_name": {
+                "type": "string"
+              },
+              "public_name": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "edrpou": {
+                "type": "string"
+              },
+              "owner_property_type": {
+                "type": "string"
+              },
+              "legal_form": {
+                "type": "string"
+              },
+              "mis_verified": {
+                "type": "string"
+              },
+              "nhs_verified": {
+                "type": "boolean"
+              },
+              "addresses": {
+                "type": "array"
+              },
+              "kveds": {
+                "type": "array"
+              },
+              "phones": {
+                "type": "array"
+              },
+              "owner": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "position": {
+                    "type": "string"
+                  },
+                  "employee_type": {
+                    "type": "string"
+                  },
+                  "party": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "first_name": {
+                        "type": "string"
+                      },
+                      "last_name": {
+                        "type": "string"
+                      },
+                      "second_name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "first_name",
+                      "last_name",
+                      "second_name"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "position",
+                  "employee_type",
+                  "party"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "type",
+              "short_name",
+              "public_name",
+              "email",
+              "edrpou",
+              "legal_form",
+              "mis_verified",
+              "nhs_verified",
+              "addresses",
+              "phones",
+              "kveds",
+              "owner"
+            ]
           }
         },
         "required": [
