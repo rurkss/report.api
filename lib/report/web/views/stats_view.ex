@@ -69,10 +69,7 @@ defmodule Report.Web.StatsView do
       "name" => division.name,
       "type" => division.type,
       "addresses" => division.addresses,
-      "coordinates" => %{
-        "latitude" => elem(division.location.coordinates, 1),
-        "longitude" => elem(division.location.coordinates, 0),
-      },
+      "coordinates" => render_coordinates(division.location),
       "contacts" => %{
         "email" => division.email,
         "phones" => division.phones,
@@ -102,12 +99,25 @@ defmodule Report.Web.StatsView do
     render_many(divisions, __MODULE__, "division_details.json")
   end
 
-  defp render_legal_entity_owner(view, %{employees: [employee]} = legal_entity) do
+  defp render_legal_entity_owner(view, %{employees: [employee]}) do
     owner =
       employee
       |> Map.take(@employee_fields)
       |> Map.put(:party, Map.take(employee.party, @party_fields))
 
     Map.put(view, :owner, owner)
+  end
+
+  defp render_coordinates(%{coordinates: {longitude, latitude}} = a) do
+    %{
+      "latitude" => latitude,
+      "longitude" => longitude,
+    }
+  end
+  defp render_coordinates(_) do
+    %{
+      "latitude" => nil,
+      "longitude" => nil,
+    }
   end
 end
