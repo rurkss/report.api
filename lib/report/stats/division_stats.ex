@@ -8,9 +8,12 @@ defmodule Report.Stats.DivisionStats do
 
   alias Report.Repo
   alias Report.Replica.Division
+  alias Report.Replica.Employee
   alias Report.Stats.DivisionsMapRequest
 
   @type_residence "RESIDENCE"
+  @type_owner Employee.type(:owner)
+
   @fields_address ~w(
     area
     region
@@ -33,7 +36,12 @@ defmodule Report.Stats.DivisionStats do
     |> query_name(get_change(changeset, :name))
     |> query_locations(changeset.changes)
     |> query_addresses(changeset.changes)
-    |> query_legal_entities(changeset.changes)
+    |> join(:inner, [d], l in assoc(d, :legal_entity))
+    |> query_legal_entity_name(get_change(changeset, :legal_entity_name))
+    |> query_legal_entity_edrpou(get_change(changeset, :legal_entity_edrpou))
+    |> join(:inner, [..., l], e in Employee, e.legal_entity_id == l.id and e.employee_type == ^@type_owner)
+    |> join(:inner, [..., e], innm in assoc(e, :party))
+    |> preload([..., l, e, p], [legal_entity: {l, employees: {e, party: p}}])
     |> Repo.paginate(params)
   end
 
@@ -72,17 +80,6 @@ defmodule Report.Stats.DivisionStats do
         _ -> acc
       end
     end)
-  end
-
-  defp query_legal_entities(query, changes) do
-    if Enum.any?(changes, fn({key, _}) -> key in [:legal_entity_name, :legal_entity_edrpou] end) do
-      query
-      |> join(:inner, [d], l in assoc(d, :legal_entity))
-      |> query_legal_entity_name(changes.legal_entity_name)
-      |> query_legal_entity_edrpou(changes.legal_entity_edrpou)
-    else
-      query
-    end
   end
 
   defp query_legal_entity_name(query, nil), do: query

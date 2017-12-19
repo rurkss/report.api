@@ -4,6 +4,7 @@ defmodule Report.Web.StatsControllerTest do
   use Report.Web.ConnCase
   import Report.Web.Router.Helpers
   alias Report.Stats.HistogramStatsRequest
+  alias Report.Replica.Employee
 
   test "get main stats", %{conn: conn} do
     conn = get conn, stats_path(conn, :index)
@@ -107,6 +108,23 @@ defmodule Report.Web.StatsControllerTest do
   end
 
   describe "get divisions" do
+    test "validate schema response", %{conn: conn} do
+      legal_entity = insert(:legal_entity)
+      insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
+      insert(:division, legal_entity: legal_entity)
+
+      resp =
+        conn
+        |> get(stats_path(conn, :divisions_map))
+        |> json_response(200)
+
+      schema =
+        "test/data/stats/divisions_map_response.json"
+        |> File.read!()
+        |> Poison.decode!()
+
+      :ok = NExJsonSchema.Validator.validate(schema, resp)
+    end
     test "get divisions map stats", %{conn: conn} do
       conn = get conn, stats_path(conn, :divisions_map)
       assert response(conn, 200)
@@ -170,6 +188,7 @@ defmodule Report.Web.StatsControllerTest do
 
     test "search divisions by location", %{conn: conn} do
       legal_entity = insert(:legal_entity)
+      insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
 
       location1 = %Geo.Point{coordinates: {30.512653, 50.469034}}
       location2 = %Geo.Point{coordinates: {30.515710, 50.468802}}
@@ -196,9 +215,11 @@ defmodule Report.Web.StatsControllerTest do
 
     test "search divisions by legal entity name and edrpou", %{conn: conn} do
       legal_entity = insert(:legal_entity, name: "У Михалыча", edrpou: "10020030")
+      insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
       division1 = insert(:division, legal_entity: legal_entity)
 
       legal_entity2 = insert(:legal_entity, name: "Синяк", edrpou: "20030040")
+      insert(:employee, legal_entity: legal_entity2, employee_type: Employee.type(:owner))
       division2 = insert(:division, legal_entity: legal_entity2)
 
       params = %{legal_entity_name: legal_entity.name, legal_entity_edrpou: legal_entity.edrpou}
@@ -236,6 +257,7 @@ defmodule Report.Web.StatsControllerTest do
 
     test "search divisions by address", %{conn: conn} do
       legal_entity = insert(:legal_entity)
+      insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
       address1 = [
         %{
           "type": "REGISTRATION",
@@ -339,9 +361,11 @@ defmodule Report.Web.StatsControllerTest do
   end
 
   defp insert_fixtures do
-    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}})
-    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}})
-    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}})
-    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}})
+    legal_entity = insert(:legal_entity)
+    insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
+    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}}, legal_entity: legal_entity)
+    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}}, legal_entity: legal_entity)
+    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}}, legal_entity: legal_entity)
+    insert(:division, location: %Geo.Point{coordinates: {30.1233, 50.32423}}, legal_entity: legal_entity)
   end
 end

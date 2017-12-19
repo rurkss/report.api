@@ -25,6 +25,7 @@ defmodule Report.Replica.LegalEntity do
     field :nhs_verified, :boolean, default: false
 
     has_one :medical_service_provider, {"medical_service_providers", Report.Replica.MSP}, on_replace: :delete
+    has_many :employees, Report.Replica.Employee, on_replace: :delete
 
     timestamps()
   end

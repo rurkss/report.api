@@ -149,22 +149,25 @@ defmodule Report.Factory do
 
   def legal_entity_factory do
     %LegalEntity{
-      is_active: true,
-      addresses: [%{}],
       edrpou: sequence(:edrpou, &"2007772#{&1}"),
       email: sequence(:email, &"legal-entity-#{&1}@example.com"),
       kveds: ["test"],
-      legal_form: Faker.Pokemon.name,
       name: Faker.Pokemon.name,
-      owner_property_type: Faker.Beer.style,
       public_name: Faker.Company.name,
       short_name: Faker.Company.suffix,
+      legal_form: Faker.Pokemon.name,
+      owner_property_type: Faker.Beer.style,
       status: "ACTIVE",
       type: "MSP",
       inserted_by: UUID.generate,
       updated_by: UUID.generate,
       created_by_mis_client_id: UUID.generate,
-      medical_service_provider: build(:msp)
+      medical_service_provider: build(:msp),
+      is_active: true,
+      addresses: [%{}],
+      phones: [],
+      mis_verified: "VERIFIED",
+      nhs_verified: true,
     }
   end
 
