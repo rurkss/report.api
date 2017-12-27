@@ -33,9 +33,9 @@ defmodule Report.Web.StatsController do
     end
   end
 
-  def divisions_map(conn, params) do
+  def divisions(conn, params) do
     with {:ok, %Page{} = paging} <- DivisionStats.get_map_stats(params) do
-      render(conn, "divisions_map.json", divisions: paging.entries, paging: paging)
+      render(conn, "divisions.json", divisions: paging.entries, paging: paging)
     end
   end
 end

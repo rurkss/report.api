@@ -95,7 +95,7 @@ defmodule Report.Web.StatsView do
     |> render_legal_entity_owner(legal_entity)
   end
 
-  def render("divisions_map.json", %{divisions: divisions}) do
+  def render("divisions.json", %{divisions: divisions}) do
     render_many(divisions, __MODULE__, "division_details.json")
   end
 

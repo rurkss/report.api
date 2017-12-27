@@ -3,19 +3,19 @@ defmodule Report.Stats.DivisionStatsValidator do
 
   import Ecto.Changeset
 
-  alias Report.Stats.DivisionsMapRequest
+  alias Report.Stats.DivisionsRequest
 
   @fields_location ~w(
-    lefttop_latitude
-    lefttop_longitude
-    rightbottom_latitude
-    rightbottom_longitude
+    north
+    east
+    south
+    west
   )a
 
-  def divisions_map_changeset(%DivisionsMapRequest{} = divisions_map_request, params) do
-    divisions_map_request
-    |> cast(params, DivisionsMapRequest.__schema__(:fields))
-    |> validate_inclusion(:type, DivisionsMapRequest.types())
+  def divisions_changeset(%DivisionsRequest{} = divisions_request, params) do
+    divisions_request
+    |> cast(params, DivisionsRequest.__schema__(:fields))
+    |> validate_inclusion(:type, DivisionsRequest.types())
     |> validate_location_fields()
   end
 
@@ -25,10 +25,10 @@ defmodule Report.Stats.DivisionStatsValidator do
         geo_format = [less_than_or_equal_to: 90, greater_than_or_equal_to: -90]
         changeset
         |> validate_required(@fields_location)
-        |> validate_number(:lefttop_latitude, geo_format)
-        |> validate_number(:lefttop_longitude, geo_format)
-        |> validate_number(:rightbottom_latitude, geo_format)
-        |> validate_number(:rightbottom_longitude, geo_format)
+        |> validate_number(:north, geo_format)
+        |> validate_number(:east, geo_format)
+        |> validate_number(:south, geo_format)
+        |> validate_number(:west, geo_format)
 
       false ->
         changeset

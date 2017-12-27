@@ -32,7 +32,7 @@ defmodule Report.Web.Router do
     scope "/reports" do
       scope "/stats" do
         get "/", StatsController, :index
-        get "/divisions/map", StatsController, :divisions_map
+        get "/divisions", StatsController, :divisions
         get "/division/:id", StatsController, :division
         get "/regions", StatsController, :regions
         get "/histogram", StatsController, :histogram
