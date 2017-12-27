@@ -1,4 +1,4 @@
-defmodule Report.Stats.DivisionsMapRequest do
+defmodule Report.Stats.DivisionsRequest do
   @moduledoc false
 
   use Ecto.Schema

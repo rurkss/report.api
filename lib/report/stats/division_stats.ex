@@ -9,7 +9,7 @@ defmodule Report.Stats.DivisionStats do
   alias Report.Repo
   alias Report.Replica.Division
   alias Report.Replica.Employee
-  alias Report.Stats.DivisionsMapRequest
+  alias Report.Stats.DivisionsRequest
 
   @type_residence "RESIDENCE"
   @type_owner Employee.type(:owner)
@@ -21,7 +21,7 @@ defmodule Report.Stats.DivisionStats do
   )a
 
   def get_map_stats(params) do
-    with %Ecto.Changeset{valid?: true} = changeset <- divisions_changeset(%DivisionsMapRequest{}, params),
+    with %Ecto.Changeset{valid?: true} = changeset <- divisions_changeset(%DivisionsRequest{}, params),
          divisions <- divisions_by_changeset(changeset, params)
       do
       {:ok, divisions}

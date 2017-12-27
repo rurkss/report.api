@@ -6,7 +6,7 @@ defmodule Report.Integration.DivisionStatsTest do
   alias Report.Replica.Division
   alias Report.Replica.Employee
   alias Report.Stats.DivisionStats
-  alias Report.Stats.DivisionsMapRequest
+  alias Report.Stats.DivisionsRequest
   alias Scrivener.Page
 
   describe "get_map_stats/1" do
@@ -14,7 +14,7 @@ defmodule Report.Integration.DivisionStatsTest do
       %{"division" => division} = insert_fixtures()
       params = %{
         name: division.name,
-        type: DivisionsMapRequest.type(:clinic),
+        type: DivisionsRequest.type(:clinic),
         east: 25,
         north: 45,
         west: 35,
@@ -32,7 +32,7 @@ defmodule Report.Integration.DivisionStatsTest do
 
     test "search drugstores" do
       insert_fixtures()
-      drugstore = DivisionsMapRequest.type(:drugstore)
+      drugstore = DivisionsRequest.type(:drugstore)
       params = %{
         type: drugstore,
         east: 25,
@@ -56,14 +56,14 @@ defmodule Report.Integration.DivisionStatsTest do
     params = [
       legal_entity_id: legal_entity.id,
       location: %Geo.Point{coordinates: {30.1233, 50.32423}},
-      type: DivisionsMapRequest.type(:clinic),
+      type: DivisionsRequest.type(:clinic),
       status: "ACTIVE",
       is_active: true,
       name: "test name",
     ]
     division = insert(:division, params)
     insert(:division, Keyword.put(params, :is_active, false))
-    insert(:division, Keyword.put(params, :type, DivisionsMapRequest.type(:drugstore)))
+    insert(:division, Keyword.put(params, :type, DivisionsRequest.type(:drugstore)))
     %{
       "division" => division,
       "legal_entity" => legal_entity,

@@ -3,7 +3,7 @@ defmodule Report.Stats.DivisionStatsValidator do
 
   import Ecto.Changeset
 
-  alias Report.Stats.DivisionsMapRequest
+  alias Report.Stats.DivisionsRequest
 
   @fields_location ~w(
     north
@@ -12,10 +12,10 @@ defmodule Report.Stats.DivisionStatsValidator do
     west
   )a
 
-  def divisions_changeset(%DivisionsMapRequest{} = divisions_request, params) do
+  def divisions_changeset(%DivisionsRequest{} = divisions_request, params) do
     divisions_request
-    |> cast(params, DivisionsMapRequest.__schema__(:fields))
-    |> validate_inclusion(:type, DivisionsMapRequest.types())
+    |> cast(params, DivisionsRequest.__schema__(:fields))
+    |> validate_inclusion(:type, DivisionsRequest.types())
     |> validate_location_fields()
   end
 
