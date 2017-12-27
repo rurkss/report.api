@@ -12,6 +12,7 @@ defmodule Report.Stats.DivisionsMapRequest do
   @type_drugstore_point "DRUGSTORE_POINT"
 
   schema "divisions_map" do
+    field :id, Ecto.UUID
     field :type, :string
     field :name, :string
     field :area, :string
