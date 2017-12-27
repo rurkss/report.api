@@ -31,7 +31,14 @@ defmodule Report.Stats.DivisionStats do
   def divisions_by_changeset(changeset, params) do
     Division
     |> select([d], d)
-    |> params_query(%{"type" => get_change(changeset, :type), "status" => "ACTIVE", "is_active" => true})
+    |> params_query(
+         %{
+           "id" => get_change(changeset, :id),
+           "type" => get_change(changeset, :type),
+           "status" => "ACTIVE",
+           "is_active" => true
+         }
+       )
     |> query_legal_entity_id(get_change(changeset, :legal_entity_id))
     |> query_name(get_change(changeset, :name))
     |> query_locations(changeset.changes)

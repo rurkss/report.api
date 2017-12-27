@@ -125,6 +125,20 @@ defmodule Report.Web.StatsControllerTest do
 
       :ok = NExJsonSchema.Validator.validate(schema, resp)
     end
+
+    test "filter divisions by id", %{conn: conn} do
+      legal_entity = insert(:legal_entity)
+      insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
+      insert(:division, legal_entity: legal_entity)
+      %{id: division_id} = insert(:division, legal_entity: legal_entity)
+
+      assert [%{"id" => ^division_id}] =
+               conn
+               |> get(stats_path(conn, :divisions_map, id: division_id))
+               |> json_response(200)
+               |> Map.get("data")
+    end
+
     test "get divisions map stats", %{conn: conn} do
       conn = get conn, stats_path(conn, :divisions_map)
       assert response(conn, 200)
