@@ -11,7 +11,7 @@ defmodule Report.Stats.DivisionsMapRequest do
   @type_drugstore "DRUGSTORE"
   @type_drugstore_point "DRUGSTORE_POINT"
 
-  schema "divisions_map" do
+  schema "divisions" do
     field :id, Ecto.UUID
     field :type, :string
     field :name, :string
@@ -21,10 +21,10 @@ defmodule Report.Stats.DivisionsMapRequest do
     field :legal_entity_id, Ecto.UUID
     field :legal_entity_name, :string
     field :legal_entity_edrpou, :string
-    field :lefttop_latitude, :float
-    field :lefttop_longitude, :float
-    field :rightbottom_latitude, :float
-    field :rightbottom_longitude, :float
+    field :north, :float
+    field :east, :float
+    field :south, :float
+    field :west, :float
   end
 
   def type(:clinic), do: @type_clinic

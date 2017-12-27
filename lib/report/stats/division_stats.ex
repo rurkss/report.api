@@ -21,7 +21,7 @@ defmodule Report.Stats.DivisionStats do
   )a
 
   def get_map_stats(params) do
-    with %Ecto.Changeset{valid?: true} = changeset <- divisions_map_changeset(%DivisionsMapRequest{}, params),
+    with %Ecto.Changeset{valid?: true} = changeset <- divisions_changeset(%DivisionsMapRequest{}, params),
          divisions <- divisions_by_changeset(changeset, params)
       do
       {:ok, divisions}
@@ -66,10 +66,10 @@ defmodule Report.Stats.DivisionStats do
   defp query_locations(
          query,
          %{
-           lefttop_latitude: tlat,
-           lefttop_longitude: tlong,
-           rightbottom_latitude: blat,
-           rightbottom_longitude: blong
+           north: tlat,
+           east: tlong,
+           south: blat,
+           west: blong
          }
        ) do
     where(query, fragment("location && ST_MakeEnvelope(?, ?, ?, ?, 4326)", ^tlong, ^tlat, ^blong, ^blat))

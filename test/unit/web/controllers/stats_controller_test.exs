@@ -115,11 +115,11 @@ defmodule Report.Web.StatsControllerTest do
 
       resp =
         conn
-        |> get(stats_path(conn, :divisions_map))
+        |> get(stats_path(conn, :divisions))
         |> json_response(200)
 
       schema =
-        "test/data/stats/divisions_map_response.json"
+        "test/data/stats/divisions_response.json"
         |> File.read!()
         |> Poison.decode!()
 
@@ -134,60 +134,60 @@ defmodule Report.Web.StatsControllerTest do
 
       assert [%{"id" => ^division_id}] =
                conn
-               |> get(stats_path(conn, :divisions_map, id: division_id))
+               |> get(stats_path(conn, :divisions, id: division_id))
                |> json_response(200)
                |> Map.get("data")
     end
 
     test "get divisions map stats", %{conn: conn} do
-      conn = get conn, stats_path(conn, :divisions_map)
+      conn = get conn, stats_path(conn, :divisions)
       assert response(conn, 200)
 
-      conn = get conn, stats_path(conn, :divisions_map,
-        lefttop_latitude: "50.32423",
-        lefttop_longitude: "30.1233",
-        rightbottom_latitude: "50.32423",
+      conn = get conn, stats_path(conn, :divisions,
+        north: "50.32423",
+        east: "30.1233",
+        south: "50.32423",
       )
       assert response(conn, 422)
 
-      conn = get conn, stats_path(conn, :divisions_map,
-        lefttop_latitude: "invalid",
-        lefttop_longitude: "50.32423",
-        rightbottom_latitude: "50.32423",
-        rightbottom_longitude: "50.32423"
+      conn = get conn, stats_path(conn, :divisions,
+        north: "invalid",
+        east: "50.32423",
+        south: "50.32423",
+        west: "50.32423"
       )
       assert response(conn, 422)
 
-      conn = get conn, stats_path(conn, :divisions_map,
-        lefttop_latitude: "50.32423",
-        lefttop_longitude: "30.1233",
-        rightbottom_latitude: "50.32423",
-        rightbottom_longitude: "50.32423",
+      conn = get conn, stats_path(conn, :divisions,
+        north: "50.32423",
+        east: "30.1233",
+        south: "50.32423",
+        west: "50.32423",
       )
       assert response(conn, 200)
 
-      conn = get conn, stats_path(conn, :divisions_map,
+      conn = get conn, stats_path(conn, :divisions,
         type: "invalid",
-        lefttop_latitude: "50.32423",
-        lefttop_longitude: "30.1233",
-        rightbottom_latitude: "50.32423",
-        rightbottom_longitude: "50.32423",
+        north: "50.32423",
+        east: "30.1233",
+        south: "50.32423",
+        west: "50.32423",
       )
       assert response(conn, 422)
 
       insert_fixtures()
-      conn = get conn, stats_path(conn, :divisions_map,
-        lefttop_latitude: 45,
-        lefttop_longitude: 35,
-        rightbottom_latitude: 55,
-        rightbottom_longitude: 25,
+      conn = get conn, stats_path(conn, :divisions,
+        north: 45,
+        east: 35,
+        south: 55,
+        west: 25,
         page_size: 3,
       )
       assert map_stats = response(conn, 200)
       map_stats = Poison.decode!(map_stats)
 
       schema =
-        "test/data/stats/divisions_map_response.json"
+        "test/data/stats/divisions_response.json"
         |> File.read!()
         |> Poison.decode!()
 
@@ -212,13 +212,13 @@ defmodule Report.Web.StatsControllerTest do
       insert(:division, legal_entity: legal_entity, location: location3)
 
       params = %{
-        "lefttop_longitude" => 30.509370,
-        "lefttop_latitude" => 50.471165,
-        "rightbottom_longitude" => 30.517845,
-        "rightbottom_latitude" => 50.466781,
+        "east" => 30.509370,
+        "north" => 50.471165,
+        "west" => 30.517845,
+        "south" => 50.466781,
       }
 
-      conn1 = get conn, stats_path(conn, :divisions_map), params
+      conn1 = get conn, stats_path(conn, :divisions), params
       resp = json_response(conn1, 200)["data"]
 
       assert 2 == length(resp)
@@ -238,7 +238,7 @@ defmodule Report.Web.StatsControllerTest do
 
       params = %{legal_entity_name: legal_entity.name, legal_entity_edrpou: legal_entity.edrpou}
       resp = conn
-             |> get(stats_path(conn, :divisions_map), params)
+             |> get(stats_path(conn, :divisions), params)
              |> json_response(200)
              |> Map.get("data")
 
@@ -248,13 +248,13 @@ defmodule Report.Web.StatsControllerTest do
       # name and edrpou from different legal entitites
       params = %{legal_entity_name: legal_entity.name, legal_entity_edrpou: legal_entity2.edrpou}
       assert [] == conn
-                   |> get(stats_path(conn, :divisions_map), params)
+                   |> get(stats_path(conn, :divisions), params)
                    |> json_response(200)
                    |> Map.get("data")
 
       params = %{legal_entity_name: legal_entity2.name, legal_entity_edrpou: legal_entity2.edrpou}
       resp = conn
-             |> get(stats_path(conn, :divisions_map), params)
+             |> get(stats_path(conn, :divisions), params)
              |> json_response(200)
              |> Map.get("data")
 
@@ -264,7 +264,7 @@ defmodule Report.Web.StatsControllerTest do
       # name and edrpou from different legal entitites
       params = %{legal_entity_name: legal_entity2.name, legal_entity_edrpou: legal_entity.edrpou}
       assert [] == conn
-                   |> get(stats_path(conn, :divisions_map), params)
+                   |> get(stats_path(conn, :divisions), params)
                    |> json_response(200)
                    |> Map.get("data")
     end
@@ -321,7 +321,7 @@ defmodule Report.Web.StatsControllerTest do
       # By all address params
       params = %{area: "Київська", region: "Київський", settlement: "Київ"}
       resp = conn
-             |> get(stats_path(conn, :divisions_map), params)
+             |> get(stats_path(conn, :divisions), params)
              |> json_response(200)
              |> Map.get("data")
       assert 1 == length(resp)
@@ -330,7 +330,7 @@ defmodule Report.Web.StatsControllerTest do
       # search by area. Assert that division with registration area "Київська" not in response
       params = %{area: "Київська"}
       resp = conn
-             |> get(stats_path(conn, :divisions_map), params)
+             |> get(stats_path(conn, :divisions), params)
              |> json_response(200)
              |> Map.get("data")
       assert 2 == length(resp)
@@ -344,7 +344,7 @@ defmodule Report.Web.StatsControllerTest do
       # search by region
       params = %{region: "Броварський"}
       resp = conn
-             |> get(stats_path(conn, :divisions_map), params)
+             |> get(stats_path(conn, :divisions), params)
              |> json_response(200)
              |> Map.get("data")
       assert 2 == length(resp)
@@ -358,7 +358,7 @@ defmodule Report.Web.StatsControllerTest do
       # search by settlement
       params = %{settlement: "Лубни"}
       resp = conn
-             |> get(stats_path(conn, :divisions_map), params)
+             |> get(stats_path(conn, :divisions), params)
              |> json_response(200)
              |> Map.get("data")
       assert 1 == length(resp)
@@ -368,7 +368,7 @@ defmodule Report.Web.StatsControllerTest do
       params = %{area: "Київська", settlement: "Лубни"}
       assert [] =
                conn
-               |> get(stats_path(conn, :divisions_map), params)
+               |> get(stats_path(conn, :divisions), params)
                |> json_response(200)
                |> Map.get("data")
     end

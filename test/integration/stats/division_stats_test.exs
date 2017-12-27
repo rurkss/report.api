@@ -15,10 +15,10 @@ defmodule Report.Integration.DivisionStatsTest do
       params = %{
         name: division.name,
         type: DivisionsMapRequest.type(:clinic),
-        lefttop_longitude: 25,
-        lefttop_latitude: 45,
-        rightbottom_longitude: 35,
-        rightbottom_latitude: 55,
+        east: 25,
+        north: 45,
+        west: 35,
+        south: 55,
       }
 
       {:ok, %Page{entries: map_stats}} = DivisionStats.get_map_stats(params)
@@ -35,10 +35,10 @@ defmodule Report.Integration.DivisionStatsTest do
       drugstore = DivisionsMapRequest.type(:drugstore)
       params = %{
         type: drugstore,
-        lefttop_longitude: 25,
-        lefttop_latitude: 45,
-        rightbottom_longitude: 35,
-        rightbottom_latitude: 55,
+        east: 25,
+        north: 45,
+        west: 35,
+        south: 55,
       }
 
       {:ok, %Page{entries: map_stats}} = DivisionStats.get_map_stats(params)
