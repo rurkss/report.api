@@ -31,7 +31,7 @@ defmodule Report.GandalfCaller do
     [
       {"Content-Type", "application/json"},
       {"Authorization", "Basic #{auth_token(config)}"},
-      {"X-Application", "58eca20fe79e8563e803dc18"}
+      {"X-Application", config[:application_header]}
     ]
   end
 
