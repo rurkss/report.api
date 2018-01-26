@@ -14,35 +14,44 @@ defmodule Report.Stats.ReimbursementStatsValidator do
   alias Report.Stats.ReimbursementRequest.Period
 
   def validate(_, nil, _) do
-    {:error, [{%{
-      description: "Legal entity not found",
-      params: [],
-      rule: :invalid
-    }, "$.legal_entity_id"}]}
+    {:error,
+     [
+       {%{
+          description: "Legal entity not found",
+          params: [],
+          rule: :invalid
+        }, "$.legal_entity_id"}
+     ]}
   end
+
   def validate(_, _, nil) do
-    {:error, [{%{
-      description: "Party not found",
-      params: [],
-      rule: :invalid
-    }, "$.party_id"}]}
+    {:error,
+     [
+       {%{
+          description: "Party not found",
+          params: [],
+          rule: :invalid
+        }, "$.party_id"}
+     ]}
   end
+
   def validate(params, legal_entity_id, user_id) do
     with %LegalEntity{} = legal_entity <- get_legal_entity(legal_entity_id),
          :ok <- validate_legal_entity_type(legal_entity),
          :ok <- validate_active_legal_entity(legal_entity),
          %PartyUser{party: party} <- get_party_user(user_id),
-         :ok <- validate_active_party(party, legal_entity_id)
-    do
+         :ok <- validate_active_party(party, legal_entity_id) do
       {changeset(%ReimbursementRequest{}, params), legal_entity}
     end
   end
+
   def validate(params) do
     changeset(%ReimbursementCSVRequest{}, params)
   end
 
   def changeset(%ReimbursementCSVRequest{} = reimbursement_csv_request, params) do
     fields = ~w(date_from_dispense date_to_dispense)a
+
     changeset =
       reimbursement_csv_request
       |> cast(params, fields)
@@ -55,15 +64,20 @@ defmodule Report.Stats.ReimbursementStatsValidator do
         add_error(changeset, :date_from_dispense, "Input dates are not valid")
     end
   end
+
   def changeset(%ReimbursementRequest{} = reimbursement_request, params) do
-    dispense = Period.changeset(%Period{}, %{
-      "from" => Map.get(params, "date_from_dispense"),
-      "to" => Map.get(params, "date_to_dispense")
-    })
-    request = Period.changeset(%Period{}, %{
-      "from" => Map.get(params, "date_from_request"),
-      "to" => Map.get(params, "date_to_request")
-    })
+    dispense =
+      Period.changeset(%Period{}, %{
+        "from" => Map.get(params, "date_from_dispense"),
+        "to" => Map.get(params, "date_to_dispense")
+      })
+
+    request =
+      Period.changeset(%Period{}, %{
+        "from" => Map.get(params, "date_from_request"),
+        "to" => Map.get(params, "date_to_request")
+      })
+
     period =
       %EmbeddedData{}
       |> EmbeddedData.changeset()
@@ -81,14 +95,15 @@ defmodule Report.Stats.ReimbursementStatsValidator do
       changeset
       |> get_change(:period)
       |> get_change(:dispense)
+
     %Ecto.Changeset{changes: request_changes} =
       changeset
       |> get_change(:period)
       |> get_change(:request)
+
     with true <- dispense_changes != %{} || request_changes != %{},
          %Ecto.Changeset{valid?: true} = changeset <- validate_period(changeset, :dispense),
-         %Ecto.Changeset{valid?: true} = changeset <- validate_period(changeset, :request)
-    do
+         %Ecto.Changeset{valid?: true} = changeset <- validate_period(changeset, :request) do
       changeset
     else
       false -> add_error(changeset, :period, "At least one of input dates must be not empty")
@@ -110,12 +125,13 @@ defmodule Report.Stats.ReimbursementStatsValidator do
   end
 
   defp do_validate_period(%Ecto.Changeset{changes: changes}, _, _) when changes == %{}, do: :ok
+
   defp do_validate_period(field_changeset, field_from \\ :from, field_to \\ :to) do
     from = get_change(field_changeset, field_from)
     to = get_change(field_changeset, field_to)
+
     with true <- !is_nil(from) && !is_nil(to),
-         true <- Date.compare(from, to) != :gt
-    do
+         true <- Date.compare(from, to) != :gt do
       :ok
     else
       _ -> :error
@@ -134,6 +150,7 @@ defmodule Report.Stats.ReimbursementStatsValidator do
   end
 
   defp validate_legal_entity_type(%LegalEntity{type: type}) when type in ["MSP", "PHARMACY"], do: :ok
+
   defp validate_legal_entity_type(_) do
     {:error, :forbidden}
   end
@@ -145,7 +162,8 @@ defmodule Report.Stats.ReimbursementStatsValidator do
     employees =
       Employee
       |> where([e], party_id: ^id)
-      |> Repo.all
+      |> Repo.all()
+
     Enum.reduce_while(employees, {:error, :forbidden}, fn employee, acc ->
       if is_active_employee(employee) && employee.legal_entity_id == legal_entity_id do
         {:halt, :ok}

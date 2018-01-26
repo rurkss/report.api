@@ -14,8 +14,8 @@ defmodule Report.Web.Router do
   require Logger
 
   pipeline :api do
-    plug :accepts, ["json"]
-    plug :put_secure_browser_headers
+    plug(:accepts, ["json"])
+    plug(:put_secure_browser_headers)
 
     # Uncomment to enable versioning of your API
     # plug Multiverse, gates: [
@@ -27,27 +27,27 @@ defmodule Report.Web.Router do
   end
 
   scope "/", Report.Web do
-    pipe_through :api
+    pipe_through(:api)
 
     scope "/reports" do
       scope "/stats" do
-        get "/", StatsController, :index
-        get "/divisions", StatsController, :divisions
-        get "/division/:id", StatsController, :division
-        get "/regions", StatsController, :regions
-        get "/histogram", StatsController, :histogram
+        get("/", StatsController, :index)
+        get("/divisions", StatsController, :divisions)
+        get("/division/:id", StatsController, :division)
+        get("/regions", StatsController, :regions)
+        get("/histogram", StatsController, :histogram)
       end
 
       scope "/log" do
-        get "/", ReportLogsController, :index
-        get "/temp_capitation", ReportLogsController, :temp_capitation
+        get("/", ReportLogsController, :index)
+        get("/temp_capitation", ReportLogsController, :temp_capitation)
       end
     end
 
-    get "/page", PageController, :index
+    get("/page", PageController, :index)
 
-    get "/reimbursement_report", ReimbursementController, :index
-    get "/reimbursement_report_download", ReimbursementController, :download
+    get("/reimbursement_report", ReimbursementController, :index)
+    get("/reimbursement_report_download", ReimbursementController, :download)
   end
 
   defp handle_errors(%Plug.Conn{status: 500} = conn, %{kind: kind, reason: reason, stack: stacktrace}) do

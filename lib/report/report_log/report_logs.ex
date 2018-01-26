@@ -12,6 +12,6 @@ defmodule Report.ReportLogs do
     schema
     |> cast(attrs, [:public_url])
     |> put_change(:type, "capitation")
-    |> Repo.insert
+    |> Repo.insert()
   end
 end

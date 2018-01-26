@@ -7,25 +7,29 @@ defmodule Report.Web.StatsControllerTest do
   alias Report.Replica.Employee
 
   test "get main stats", %{conn: conn} do
-    conn = get conn, stats_path(conn, :index)
+    conn = get(conn, stats_path(conn, :index))
+
     schema =
       "test/data/stats/main_stats_response.json"
       |> File.read!()
       |> Poison.decode!()
+
     :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
   end
 
   test "get division stats", %{conn: conn} do
     assert_raise(Ecto.NoResultsError, fn ->
-      get conn, stats_path(conn, :division, Ecto.UUID.generate())
+      get(conn, stats_path(conn, :division, Ecto.UUID.generate()))
     end)
 
     division = insert(:division)
-    conn = get conn, stats_path(conn, :division, division.id)
+    conn = get(conn, stats_path(conn, :division, division.id))
+
     schema =
       "test/data/stats/division_stats_response.json"
       |> File.read!()
       |> Poison.decode!()
+
     :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
   end
 
@@ -35,75 +39,125 @@ defmodule Report.Web.StatsControllerTest do
       |> File.read!()
       |> Poison.decode!()
 
-    conn = get conn, stats_path(conn, :regions)
+    conn = get(conn, stats_path(conn, :regions))
     :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
 
     insert(:region)
-    conn = get conn, stats_path(conn, :regions)
+    conn = get(conn, stats_path(conn, :regions))
     :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
   end
 
   test "get histogram stats", %{conn: conn} do
-    conn = get conn, stats_path(conn, :histogram)
+    conn = get(conn, stats_path(conn, :histogram))
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram, from_date: "2017-01-01")
+    conn = get(conn, stats_path(conn, :histogram, from_date: "2017-01-01"))
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram, to_date: "2017-01-01")
+    conn = get(conn, stats_path(conn, :histogram, to_date: "2017-01-01"))
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram,
-      from_date: "2017-01",
-      to_date: "2017-02",
-      interval: HistogramStatsRequest.interval(:day)
-    )
+    conn =
+      get(
+        conn,
+        stats_path(
+          conn,
+          :histogram,
+          from_date: "2017-01",
+          to_date: "2017-02",
+          interval: HistogramStatsRequest.interval(:day)
+        )
+      )
+
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram,
-      from_date: "2017",
-      to_date: "2017",
-      interval: HistogramStatsRequest.interval(:month)
-    )
+    conn =
+      get(
+        conn,
+        stats_path(
+          conn,
+          :histogram,
+          from_date: "2017",
+          to_date: "2017",
+          interval: HistogramStatsRequest.interval(:month)
+        )
+      )
+
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram,
-      from_date: "2017-07-01",
-      to_date: "2017-01-01",
-      interval: HistogramStatsRequest.interval(:month)
-    )
+    conn =
+      get(
+        conn,
+        stats_path(
+          conn,
+          :histogram,
+          from_date: "2017-07-01",
+          to_date: "2017-01-01",
+          interval: HistogramStatsRequest.interval(:month)
+        )
+      )
+
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram,
-      from_date: "2017-07-01",
-      to_date: "2017-01-01",
-      interval: HistogramStatsRequest.interval(:day)
-    )
+    conn =
+      get(
+        conn,
+        stats_path(
+          conn,
+          :histogram,
+          from_date: "2017-07-01",
+          to_date: "2017-01-01",
+          interval: HistogramStatsRequest.interval(:day)
+        )
+      )
+
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram,
-      from_date: "2017",
-      to_date: "2015",
-      interval: HistogramStatsRequest.interval(:year)
-    )
+    conn =
+      get(
+        conn,
+        stats_path(
+          conn,
+          :histogram,
+          from_date: "2017",
+          to_date: "2015",
+          interval: HistogramStatsRequest.interval(:year)
+        )
+      )
+
     assert response(conn, 422)
 
-    conn = get conn, stats_path(conn, :histogram,
-      from_date: "2017-01-01",
-      to_date: "2017-07-01",
-      interval: HistogramStatsRequest.interval(:day)
-    )
+    conn =
+      get(
+        conn,
+        stats_path(
+          conn,
+          :histogram,
+          from_date: "2017-01-01",
+          to_date: "2017-07-01",
+          interval: HistogramStatsRequest.interval(:day)
+        )
+      )
+
     assert response(conn, 200)
 
-    conn = get conn, stats_path(conn, :histogram,
-      from_date: Timex.now() |> Timex.shift(days: -5) |> Timex.format!("%F", :strftime),
-      to_date: to_string(Date.utc_today()),
-      interval: HistogramStatsRequest.interval(:day)
-    )
+    conn =
+      get(
+        conn,
+        stats_path(
+          conn,
+          :histogram,
+          from_date: Timex.now() |> Timex.shift(days: -5) |> Timex.format!("%F", :strftime),
+          to_date: to_string(Date.utc_today()),
+          interval: HistogramStatsRequest.interval(:day)
+        )
+      )
+
     schema =
       "test/data/stats/histogram_stats_response.json"
       |> File.read!()
       |> Poison.decode!()
+
     :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
   end
 
@@ -140,49 +194,85 @@ defmodule Report.Web.StatsControllerTest do
     end
 
     test "get divisions map stats", %{conn: conn} do
-      conn = get conn, stats_path(conn, :divisions)
+      conn = get(conn, stats_path(conn, :divisions))
       assert response(conn, 200)
 
-      conn = get conn, stats_path(conn, :divisions,
-        north: "50.32423",
-        east: "30.1233",
-        south: "50.32423",
-      )
+      conn =
+        get(
+          conn,
+          stats_path(
+            conn,
+            :divisions,
+            north: "50.32423",
+            east: "30.1233",
+            south: "50.32423"
+          )
+        )
+
       assert response(conn, 422)
 
-      conn = get conn, stats_path(conn, :divisions,
-        north: "invalid",
-        east: "50.32423",
-        south: "50.32423",
-        west: "50.32423"
-      )
+      conn =
+        get(
+          conn,
+          stats_path(
+            conn,
+            :divisions,
+            north: "invalid",
+            east: "50.32423",
+            south: "50.32423",
+            west: "50.32423"
+          )
+        )
+
       assert response(conn, 422)
 
-      conn = get conn, stats_path(conn, :divisions,
-        north: "50.32423",
-        east: "30.1233",
-        south: "50.32423",
-        west: "50.32423",
-      )
+      conn =
+        get(
+          conn,
+          stats_path(
+            conn,
+            :divisions,
+            north: "50.32423",
+            east: "30.1233",
+            south: "50.32423",
+            west: "50.32423"
+          )
+        )
+
       assert response(conn, 200)
 
-      conn = get conn, stats_path(conn, :divisions,
-        type: "invalid",
-        north: "50.32423",
-        east: "30.1233",
-        south: "50.32423",
-        west: "50.32423",
-      )
+      conn =
+        get(
+          conn,
+          stats_path(
+            conn,
+            :divisions,
+            type: "invalid",
+            north: "50.32423",
+            east: "30.1233",
+            south: "50.32423",
+            west: "50.32423"
+          )
+        )
+
       assert response(conn, 422)
 
       insert_fixtures()
-      conn = get conn, stats_path(conn, :divisions,
-        north: 45,
-        east: 35,
-        south: 55,
-        west: 25,
-        page_size: 3,
-      )
+
+      conn =
+        get(
+          conn,
+          stats_path(
+            conn,
+            :divisions,
+            north: 45,
+            east: 35,
+            south: 55,
+            west: 25,
+            page_size: 3
+          )
+        )
+
       assert map_stats = response(conn, 200)
       map_stats = Poison.decode!(map_stats)
 
@@ -215,13 +305,14 @@ defmodule Report.Web.StatsControllerTest do
         "east" => 30.509370,
         "north" => 50.471165,
         "west" => 30.517845,
-        "south" => 50.466781,
+        "south" => 50.466781
       }
 
-      conn1 = get conn, stats_path(conn, :divisions), params
+      conn1 = get(conn, stats_path(conn, :divisions), params)
       resp = json_response(conn1, 200)["data"]
 
       assert 2 == length(resp)
+
       Enum.each(resp, fn %{"id" => id} ->
         assert id in [division1.id, division2.id]
       end)
@@ -237,135 +328,156 @@ defmodule Report.Web.StatsControllerTest do
       division2 = insert(:division, legal_entity: legal_entity2)
 
       params = %{legal_entity_name: legal_entity.name, legal_entity_edrpou: legal_entity.edrpou}
-      resp = conn
-             |> get(stats_path(conn, :divisions), params)
-             |> json_response(200)
-             |> Map.get("data")
+
+      resp =
+        conn
+        |> get(stats_path(conn, :divisions), params)
+        |> json_response(200)
+        |> Map.get("data")
 
       assert 1 == length(resp)
       assert division1.id == hd(resp)["id"]
 
       # name and edrpou from different legal entitites
       params = %{legal_entity_name: legal_entity.name, legal_entity_edrpou: legal_entity2.edrpou}
-      assert [] == conn
-                   |> get(stats_path(conn, :divisions), params)
-                   |> json_response(200)
-                   |> Map.get("data")
+
+      assert [] ==
+               conn
+               |> get(stats_path(conn, :divisions), params)
+               |> json_response(200)
+               |> Map.get("data")
 
       params = %{legal_entity_name: legal_entity2.name, legal_entity_edrpou: legal_entity2.edrpou}
-      resp = conn
-             |> get(stats_path(conn, :divisions), params)
-             |> json_response(200)
-             |> Map.get("data")
+
+      resp =
+        conn
+        |> get(stats_path(conn, :divisions), params)
+        |> json_response(200)
+        |> Map.get("data")
 
       assert 1 == length(resp)
       assert division2.id == hd(resp)["id"]
 
       # name and edrpou from different legal entitites
       params = %{legal_entity_name: legal_entity2.name, legal_entity_edrpou: legal_entity.edrpou}
-      assert [] == conn
-                   |> get(stats_path(conn, :divisions), params)
-                   |> json_response(200)
-                   |> Map.get("data")
+
+      assert [] ==
+               conn
+               |> get(stats_path(conn, :divisions), params)
+               |> json_response(200)
+               |> Map.get("data")
     end
 
     test "search divisions by address", %{conn: conn} do
       legal_entity = insert(:legal_entity)
       insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
+
       address1 = [
         %{
-          "type": "REGISTRATION",
-          "area": "Одеська",
-          "region": "Бердичівський",
-          "settlement": "Одеса",
+          type: "REGISTRATION",
+          area: "Одеська",
+          region: "Бердичівський",
+          settlement: "Одеса"
         },
         %{
-          "type": "RESIDENCE",
-          "area": "Київська",
-          "region": "Київський",
-          "settlement": "Київ",
+          type: "RESIDENCE",
+          area: "Київська",
+          region: "Київський",
+          settlement: "Київ"
         }
       ]
+
       address2 = [
         %{
-          "type": "REGISTRATION",
-          "area": "Львівська",
-          "region": "Жмеринковський",
-          "settlement": "Солотвино",
+          type: "REGISTRATION",
+          area: "Львівська",
+          region: "Жмеринковський",
+          settlement: "Солотвино"
         },
         %{
-          "type": "RESIDENCE",
-          "area": "Київська",
-          "region": "Броварський",
-          "settlement": "Бровари",
+          type: "RESIDENCE",
+          area: "Київська",
+          region: "Броварський",
+          settlement: "Бровари"
         }
       ]
+
       address3 = [
         %{
-          "type": "REGISTRATION",
-          "area": "Київська",
-          "region": "Київський",
-          "settlement": "Київ",
+          type: "REGISTRATION",
+          area: "Київська",
+          region: "Київський",
+          settlement: "Київ"
         },
         %{
-          "type": "RESIDENCE",
-          "area": "Польтавська",
-          "region": "Броварський",
-          "settlement": "Лубни",
+          type: "RESIDENCE",
+          area: "Польтавська",
+          region: "Броварський",
+          settlement: "Лубни"
         }
       ]
+
       division1 = insert(:division, legal_entity: legal_entity, addresses: address1)
       division2 = insert(:division, legal_entity: legal_entity, addresses: address2)
       division3 = insert(:division, legal_entity: legal_entity, addresses: address3)
 
       # By all address params
       params = %{area: "Київська", region: "Київський", settlement: "Київ"}
-      resp = conn
-             |> get(stats_path(conn, :divisions), params)
-             |> json_response(200)
-             |> Map.get("data")
+
+      resp =
+        conn
+        |> get(stats_path(conn, :divisions), params)
+        |> json_response(200)
+        |> Map.get("data")
+
       assert 1 == length(resp)
       assert division1.id == hd(resp)["id"]
 
       # search by area. Assert that division with registration area "Київська" not in response
       params = %{area: "Київська"}
-      resp = conn
-             |> get(stats_path(conn, :divisions), params)
-             |> json_response(200)
-             |> Map.get("data")
+
+      resp =
+        conn
+        |> get(stats_path(conn, :divisions), params)
+        |> json_response(200)
+        |> Map.get("data")
+
       assert 2 == length(resp)
-      Enum.each(
-        resp,
-        fn (%{"id" => id}) ->
-          assert id in [division1.id, division2.id]
-        end
-      )
+
+      Enum.each(resp, fn %{"id" => id} ->
+        assert id in [division1.id, division2.id]
+      end)
 
       # search by region
       params = %{region: "Броварський"}
-      resp = conn
-             |> get(stats_path(conn, :divisions), params)
-             |> json_response(200)
-             |> Map.get("data")
+
+      resp =
+        conn
+        |> get(stats_path(conn, :divisions), params)
+        |> json_response(200)
+        |> Map.get("data")
+
       assert 2 == length(resp)
-      Enum.each(
-        resp,
-        fn (%{"id" => id}) ->
-          assert id in [division2.id, division3.id]
-        end
-      )
+
+      Enum.each(resp, fn %{"id" => id} ->
+        assert id in [division2.id, division3.id]
+      end)
 
       # search by settlement
       params = %{settlement: "Лубни"}
-      resp = conn
-             |> get(stats_path(conn, :divisions), params)
-             |> json_response(200)
-             |> Map.get("data")
+
+      resp =
+        conn
+        |> get(stats_path(conn, :divisions), params)
+        |> json_response(200)
+        |> Map.get("data")
+
       assert 1 == length(resp)
       assert division3.id == hd(resp)["id"]
 
       # Not Found
       params = %{area: "Київська", settlement: "Лубни"}
+
       assert [] =
                conn
                |> get(stats_path(conn, :divisions), params)

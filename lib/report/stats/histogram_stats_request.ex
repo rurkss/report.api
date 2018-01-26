@@ -10,9 +10,9 @@ defmodule Report.Stats.HistogramStatsRequest do
   @interval_year "YEAR"
 
   schema "histogram_stats" do
-    field :from_date, :date
-    field :to_date, :date
-    field :interval, :string
+    field(:from_date, :date)
+    field(:to_date, :date)
+    field(:interval, :string)
   end
 
   def interval(:day), do: @interval_day

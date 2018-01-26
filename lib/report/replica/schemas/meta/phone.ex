@@ -6,7 +6,7 @@ defmodule Report.Replica.Meta.Phone do
   @primary_key false
 
   schema "phones" do
-    field :type, :string
-    field :number, :string
+    field(:type, :string)
+    field(:number, :string)
   end
 end

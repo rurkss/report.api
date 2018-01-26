@@ -6,7 +6,7 @@ defmodule Report.Stats.ReimbursementRequest do
   @primary_key false
 
   schema "reimbursement_request" do
-    embeds_one :period, Report.Stats.ReimbursementRequest.EmbeddedData
+    embeds_one(:period, Report.Stats.ReimbursementRequest.EmbeddedData)
   end
 end
 
@@ -18,8 +18,8 @@ defmodule Report.Stats.ReimbursementRequest.EmbeddedData do
 
   @primary_key false
   embedded_schema do
-    embeds_one :request, Report.Stats.ReimbursementRequest.Period
-    embeds_one :dispense, Report.Stats.ReimbursementRequest.Period
+    embeds_one(:request, Report.Stats.ReimbursementRequest.Period)
+    embeds_one(:dispense, Report.Stats.ReimbursementRequest.Period)
   end
 
   def changeset(entity, params \\ %{}) do
@@ -38,8 +38,8 @@ defmodule Report.Stats.ReimbursementRequest.Period do
 
   @primary_key false
   embedded_schema do
-    field :from, :date
-    field :to, :date
+    field(:from, :date)
+    field(:to, :date)
   end
 
   def changeset(model, params \\ %{}) do

@@ -38,14 +38,15 @@ defmodule Report.Web.ReimbursementView do
         "medical_program" => render_one(medical_program, __MODULE__, "medical_program.json", as: :medical_program)
       })
 
-      medication_dispense = render_one(
+    medication_dispense =
+      render_one(
         reimbursement.medication_dispense,
         __MODULE__,
         "medication_dispense.json",
         as: :medication_dispense
       )
 
-      Map.merge(%{"medication_request" => medication_request}, medication_dispense)
+    Map.merge(%{"medication_request" => medication_request}, medication_dispense)
   end
 
   def render("legal_entity.json", %{legal_entity: legal_entity}) do
@@ -54,6 +55,7 @@ defmodule Report.Web.ReimbursementView do
 
   def render("employee.json", %{employee: employee}) do
     party = employee.party
+
     employee
     |> Map.take(~w(id party_id position employee_type)a)
     |> Map.merge(Map.take(party, ~w(first_name last_name second_name)a))
@@ -92,6 +94,7 @@ defmodule Report.Web.ReimbursementView do
   end
 
   def render("medication_dispense.json", %{medication_dispense: %{medication_dispense: nil}}), do: %{}
+
   def render("medication_dispense.json", %{medication_dispense: medication_dispense}) do
     party = Map.get(medication_dispense, :party, %{})
     division = Map.get(medication_dispense, :division, %{})
@@ -103,12 +106,13 @@ defmodule Report.Web.ReimbursementView do
       medication_dispense.medication_dispense
       |> Map.take(~w(id dispensed_at status)a)
       |> Map.merge(%{
-          "party" => render_one(party, __MODULE__, "party.json", as: :party),
-          "division" => render_one(division, __MODULE__, "division.json", as: :division),
-          "legal_entity" => render_one(legal_entity, __MODULE__, "legal_entity.json", as: :legal_entity),
-          "medical_program" => render_one(medical_program, __MODULE__, "medical_program.json", as: :medical_program),
-          "medications" => render_many(details, __MODULE__, "medication_dispense_details.json", as: :details),
+        "party" => render_one(party, __MODULE__, "party.json", as: :party),
+        "division" => render_one(division, __MODULE__, "division.json", as: :division),
+        "legal_entity" => render_one(legal_entity, __MODULE__, "legal_entity.json", as: :legal_entity),
+        "medical_program" => render_one(medical_program, __MODULE__, "medical_program.json", as: :medical_program),
+        "medications" => render_many(details, __MODULE__, "medication_dispense_details.json", as: :details)
       })
+
     %{"medication_dispense" => dispense}
   end
 end

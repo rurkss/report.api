@@ -11,17 +11,17 @@ defmodule Report.Web.Controllers.PageAcceptanceTest do
 
     # This assertion checks our API struct that is described in Nebo #15 API Manifest.
     assert %{
-      "meta" => %{
-        "url" => _,
-        "type" => "object",
-        "request_id" => _,
-        "code" => 200
-      },
-      "data" => %{
-        "page" => %{
-          "detail" => "This is page."
-        }
-      }
-    } = body
+             "meta" => %{
+               "url" => _,
+               "type" => "object",
+               "request_id" => _,
+               "code" => 200
+             },
+             "data" => %{
+               "page" => %{
+                 "detail" => "This is page."
+               }
+             }
+           } = body
   end
 end

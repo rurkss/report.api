@@ -21,8 +21,7 @@ defmodule Report.Stats.ReimbursementStats do
          %{request: %{changes: request_changes}} <- changes.period.changes,
          query <- get_data_query(dispense_changes, request_changes, legal_entity),
          config <- Config.new(Repo, [page_size: 10], params),
-         total_entries <- Repo.one(select(query, [mr, md], count(mr.id)))
-    do
+         total_entries <- Repo.one(select(query, [mr, md], count(mr.id))) do
       %Page{
         page_size: config.page_size,
         page_number: config.page_number,
@@ -41,8 +40,7 @@ defmodule Report.Stats.ReimbursementStats do
       query
       |> limit(^page_size)
       |> offset(^(page_size * (page_number - 1)))
-      |> select([mr, md, e, p_req, le, d_req, mp_req, m, p, d_dis, le_dis, mp_dis],
-      %{
+      |> select([mr, md, e, p_req, le, d_req, mp_req, m, p, d_dis, le_dis, mp_dis], %{
         medication_request: mr,
         division: d_req,
         employee: %{e | legal_entity: le, party: p_req},
@@ -53,10 +51,11 @@ defmodule Report.Stats.ReimbursementStats do
           party: p,
           division: d_dis,
           legal_entity: le_dis,
-          medical_program: mp_dis,
+          medical_program: mp_dis
         }
       })
-      |> Repo.all
+      |> Repo.all()
+
     medication_dispense_ids =
       entries
       |> Enum.map(fn item ->
@@ -64,23 +63,25 @@ defmodule Report.Stats.ReimbursementStats do
           item
           |> Map.get(:medication_dispense, %{})
           |> Map.get(:medication_dispense, %{}) || %{}
+
         Map.get(dispense, :id)
       end)
-      |> Enum.filter(&(Kernel.!(is_nil(&1))))
+      |> Enum.filter(&Kernel.!(is_nil(&1)))
 
     details =
       Details
       |> where([mdd], mdd.medication_dispense_id in ^medication_dispense_ids)
       |> join(:left, [mdd], m in assoc(mdd, :medication))
-      |> preload([mdd, m], [medication: m])
-      |> Repo.all
-      |> Enum.group_by(&(Map.get(&1, :medication_dispense_id)))
+      |> preload([mdd, m], medication: m)
+      |> Repo.all()
+      |> Enum.group_by(&Map.get(&1, :medication_dispense_id))
 
     Enum.map(entries, fn item ->
       dispense =
         item
         |> Map.get(:medication_dispense, %{})
         |> Map.get(:medication_dispense)
+
       if is_nil(dispense) do
         item
       else
@@ -96,12 +97,14 @@ defmodule Report.Stats.ReimbursementStats do
     |> where([mr, md], fragment("? BETWEEN ? AND ?", md.dispensed_at, ^dispense_from, ^dispense_to))
     |> do_get_data(legal_entity)
   end
+
   defp get_data_query(%{from: from, to: to}, _, legal_entity) do
     MedicationRequest
     |> join_medication_dispense()
     |> where([mr, md], fragment("? BETWEEN ? AND ?", md.dispensed_at, ^from, ^to))
     |> do_get_data(legal_entity)
   end
+
   defp get_data_query(_, %{from: from, to: to}, legal_entity) do
     MedicationRequest
     |> where([mr], fragment("? BETWEEN ? AND ?", mr.created_at, ^from, ^to))
@@ -127,8 +130,11 @@ defmodule Report.Stats.ReimbursementStats do
   defp filter_by_legal_entity(query, %LegalEntity{id: id, type: "MSP"}) do
     where(query, [mr, md, e, p_req, le], le.id == ^id and le.status == "ACTIVE")
   end
+
   defp filter_by_legal_entity(query, %LegalEntity{id: id, type: "PHARMACY"}) do
-    where(query, [mr, md, e, p_req, le, d_req, mp_req, m, p, d_dis, le_dis],
+    where(
+      query,
+      [mr, md, e, p_req, le, d_req, mp_req, m, p, d_dis, le_dis],
       le_dis.id == ^id and le_dis.status == "ACTIVE"
     )
   end

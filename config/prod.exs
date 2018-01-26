@@ -23,7 +23,7 @@ config :report_api, Report.Scheduler,
   jobs: [
     news_letter: [
       schedule: "@monthly",
-      task: {Report.Reporter, :capitation, []},
+      task: {Report.Reporter, :capitation, []}
     ]
   ]
 
@@ -45,9 +45,9 @@ config :tzdata, :autoupdate, :disabled
 config :report_api, Report.Web.Endpoint,
   load_from_system_env: true,
   http: [port: {:system, "PORT", "80"}],
-  url:  [
+  url: [
     host: {:system, "HOST", "localhost"},
-    port: {:system, "PORT", "80"},
+    port: {:system, "PORT", "80"}
   ],
   secret_key_base: {:system, "SECRET_KEY"},
   debug_errors: false,

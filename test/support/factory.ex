@@ -27,15 +27,16 @@ defmodule Report.Factory do
 
   def declaration_factory do
     start_date = Faker.NaiveDateTime.forward(1)
-    end_date   = NaiveDateTime.add(start_date, 31540000)
+    end_date = NaiveDateTime.add(start_date, 31_540_000)
+
     %Declaration{
-      declaration_request_id: UUID.generate,
+      declaration_request_id: UUID.generate(),
       start_date: start_date,
       end_date: end_date,
       status: "active",
       signed_at: start_date,
-      created_by: UUID.generate,
-      updated_by: UUID.generate,
+      created_by: UUID.generate(),
+      updated_by: UUID.generate(),
       is_active: true,
       scope: ""
     }
@@ -72,6 +73,7 @@ defmodule Report.Factory do
       |> build()
       |> division_with_legal_entity
       |> insert()
+
     %{declaration | legal_entity_id: division.legal_entity_id, division_id: division.id}
   end
 
@@ -81,52 +83,67 @@ defmodule Report.Factory do
 
   def employee_factory do
     start_date = Faker.Date.forward(-2)
-    end_date   = Faker.Date.forward(365)
+    end_date = Faker.Date.forward(365)
+
     %Employee{
       employee_type: "doctor",
-      position: Faker.Pokemon.name,
+      position: Faker.Pokemon.name(),
       start_date: start_date,
       end_date: end_date,
-      status_reason: Faker.Beer.style,
-      inserted_by: UUID.generate,
-      updated_by: UUID.generate,
+      status_reason: Faker.Beer.style(),
+      inserted_by: UUID.generate(),
+      updated_by: UUID.generate(),
       status: "APPROVED",
       is_active: true,
       party: build(:party),
-      legal_entity: build(:legal_entity),
+      legal_entity: build(:legal_entity)
     }
   end
 
   def division_factory do
     bool_list = [true, false]
+
     %Division{
       email: sequence(:email, &"division-#{&1}@example.com"),
-      name: Faker.Pokemon.name,
+      name: Faker.Pokemon.name(),
       status: "ACTIVE",
       is_active: true,
       type: "clinic",
       addresses: [
         %{
-          "zip": "02090", "area": "ЛЬВІВСЬКА",
-          "type": "REGISTRATION", "region": "ПУСТОМИТІВСЬКИЙ",
-          "street": "вул. Ніжинська", "country": "UA",
-          "building": "15", "apartment": "23",
-          "settlement": "СОРОКИ-ЛЬВІВСЬКІ", "street_type": "STREET",
-          "settlement_id": "707dbc55-cb6b-4aaa-97c1-2a1e03476100",
-          "settlement_type": "CITY"
+          zip: "02090",
+          area: "ЛЬВІВСЬКА",
+          type: "REGISTRATION",
+          region: "ПУСТОМИТІВСЬКИЙ",
+          street: "вул. Ніжинська",
+          country: "UA",
+          building: "15",
+          apartment: "23",
+          settlement: "СОРОКИ-ЛЬВІВСЬКІ",
+          street_type: "STREET",
+          settlement_id: "707dbc55-cb6b-4aaa-97c1-2a1e03476100",
+          settlement_type: "CITY"
         },
         %{
-          "zip": "02090", "area": "ЛЬВІВСЬКА", "type": "RESIDENCE", "region": "ПУСТОМИТІВСЬКИЙ",
-          "street": "Ніжинська", "country": "UA", "building": "115", "apartment": "3",
-          "settlement": "СОРОКИ-ЛЬВІВСЬКІ", "street_type": "STREET",
-          "settlement_id": "707dbc55-cb6b-4aaa-97c1-2a1e03476100", "settlement_type": "CITY"
+          zip: "02090",
+          area: "ЛЬВІВСЬКА",
+          type: "RESIDENCE",
+          region: "ПУСТОМИТІВСЬКИЙ",
+          street: "Ніжинська",
+          country: "UA",
+          building: "115",
+          apartment: "3",
+          settlement: "СОРОКИ-ЛЬВІВСЬКІ",
+          street_type: "STREET",
+          settlement_id: "707dbc55-cb6b-4aaa-97c1-2a1e03476100",
+          settlement_type: "CITY"
         }
       ],
-      phones: [%{"type": "MOBILE", "number": "+380503410870"}],
+      phones: [%{type: "MOBILE", number: "+380503410870"}],
       mountain_group: Enum.at(bool_list, :rand.uniform(2) - 1),
       location: %Geo.Point{
         coordinates: {50.12332, 30.12332}
-      },
+      }
     }
   end
 
@@ -134,15 +151,34 @@ defmodule Report.Factory do
     %Person{
       birth_date: Faker.Date.date_of_birth(19..70),
       addresses: [
-        %{"zip": "02090", "area": "ЛЬВІВСЬКА", "type": "REGISTRATION",
-        "region": "ПУСТОМИТІВСЬКИЙ", "street": "Ніжинська", "country": "UA", "building": "15", "apartment": "23",
-        "settlement": "СОРОКИ-ЛЬВІВСЬКІ",
-        "street_type": "STREET",
-        "settlement_id": "707dbc55-cb6b-4aaa-97c1-2a1e03476100", "settlement_type": "CITY"},
-        %{"zip": "02090", "area": "ЛЬВІВСЬКА", "type": "RESIDENCE", "region": "ПУСТОМИТІВСЬКИЙ",
-        "street": "Ніжинська", "country": "UA", "building": "15", "apartment": "23",
-        "settlement": "СОРОКИ-ЛЬВІВСЬКІ", "street_type": "STREET",
-        "settlement_id": "707dbc55-cb6b-4aaa-97c1-2a1e03476100", "settlement_type": "CITY"}
+        %{
+          zip: "02090",
+          area: "ЛЬВІВСЬКА",
+          type: "REGISTRATION",
+          region: "ПУСТОМИТІВСЬКИЙ",
+          street: "Ніжинська",
+          country: "UA",
+          building: "15",
+          apartment: "23",
+          settlement: "СОРОКИ-ЛЬВІВСЬКІ",
+          street_type: "STREET",
+          settlement_id: "707dbc55-cb6b-4aaa-97c1-2a1e03476100",
+          settlement_type: "CITY"
+        },
+        %{
+          zip: "02090",
+          area: "ЛЬВІВСЬКА",
+          type: "RESIDENCE",
+          region: "ПУСТОМИТІВСЬКИЙ",
+          street: "Ніжинська",
+          country: "UA",
+          building: "15",
+          apartment: "23",
+          settlement: "СОРОКИ-ЛЬВІВСЬКІ",
+          street_type: "STREET",
+          settlement_id: "707dbc55-cb6b-4aaa-97c1-2a1e03476100",
+          settlement_type: "CITY"
+        }
       ]
     }
   end
@@ -152,29 +188,29 @@ defmodule Report.Factory do
       edrpou: sequence(:edrpou, &"2007772#{&1}"),
       email: sequence(:email, &"legal-entity-#{&1}@example.com"),
       kveds: ["test"],
-      name: Faker.Pokemon.name,
-      public_name: Faker.Company.name,
-      short_name: Faker.Company.suffix,
-      legal_form: Faker.Pokemon.name,
-      owner_property_type: Faker.Beer.style,
+      name: Faker.Pokemon.name(),
+      public_name: Faker.Company.name(),
+      short_name: Faker.Company.suffix(),
+      legal_form: Faker.Pokemon.name(),
+      owner_property_type: Faker.Beer.style(),
       status: "ACTIVE",
       type: "MSP",
-      inserted_by: UUID.generate,
-      updated_by: UUID.generate,
-      created_by_mis_client_id: UUID.generate,
+      inserted_by: UUID.generate(),
+      updated_by: UUID.generate(),
+      created_by_mis_client_id: UUID.generate(),
       medical_service_provider: build(:msp),
       is_active: true,
       addresses: [%{}],
       phones: [],
       mis_verified: "VERIFIED",
-      nhs_verified: true,
+      nhs_verified: true
     }
   end
 
   def msp_factory do
     %MSP{
       accreditation: %{test: "test"},
-      licenses: [%{test: "test"}],
+      licenses: [%{test: "test"}]
     }
   end
 
@@ -184,6 +220,7 @@ defmodule Report.Factory do
 
   def billing_factory do
     declaration = make_declaration_with_all()
+
     %Billing{
       billing_date: Faker.Date.forward(-30),
       declaration_id: declaration.id,
@@ -198,7 +235,7 @@ defmodule Report.Factory do
   def report_log_factory do
     %ReportLog{
       type: "capitation",
-      public_url: Faker.Internet.url
+      public_url: Faker.Internet.url()
     }
   end
 
@@ -210,10 +247,10 @@ defmodule Report.Factory do
 
   def red_msp_territory_factory do
     %RedMSPTerritory{
-      settlement_id: UUID.generate,
+      settlement_id: UUID.generate(),
       street_type: "street",
-      street_name: Faker.Address.street_name,
-      postal_code: Faker.Address.zip,
+      street_name: Faker.Address.street_name(),
+      postal_code: Faker.Address.zip(),
       buildings: "1,2,3",
       red_msp: build(:red_msp)
     }
@@ -221,7 +258,7 @@ defmodule Report.Factory do
 
   def red_msp_factory do
     %RedMSP{
-      name: Faker.App.name,
+      name: Faker.App.name(),
       edrpou: sequence(:edrpou, &"2007772#{&1}"),
       type: "general",
       population_count: :rand.uniform(10000)
@@ -232,7 +269,7 @@ defmodule Report.Factory do
     %Party{
       first_name: "some first_name",
       last_name: "some last_name",
-      second_name: "some second_name",
+      second_name: "some second_name"
     }
   end
 
@@ -245,8 +282,8 @@ defmodule Report.Factory do
       id: UUID.generate(),
       is_active: true,
       name: "test",
-      inserted_by: UUID.generate,
-      updated_by: UUID.generate,
+      inserted_by: UUID.generate(),
+      updated_by: UUID.generate()
     }
   end
 
@@ -254,16 +291,16 @@ defmodule Report.Factory do
     %MedicationDispense{
       id: UUID.generate(),
       status: "NEW",
-      inserted_by: UUID.generate,
-      updated_by: UUID.generate,
+      inserted_by: UUID.generate(),
+      updated_by: UUID.generate(),
       is_active: true,
-      dispensed_at: to_string(Date.utc_today),
+      dispensed_at: to_string(Date.utc_today()),
       party: build(:party),
       legal_entity: build(:legal_entity),
       payment_id: UUID.generate(),
       division: build(:division),
       medical_program: build(:medical_program),
-      medication_request: build(:medication_request),
+      medication_request: build(:medication_request)
     }
   end
 
@@ -271,8 +308,8 @@ defmodule Report.Factory do
     %MedicationRequest{
       id: UUID.generate(),
       status: "ACTIVE",
-      inserted_by: UUID.generate,
-      updated_by: UUID.generate,
+      inserted_by: UUID.generate(),
+      updated_by: UUID.generate(),
       is_active: true,
       person_id: UUID.generate(),
       employee: build(:employee),
@@ -289,7 +326,7 @@ defmodule Report.Factory do
       medical_program: build(:medical_program),
       legal_entity_id: UUID.generate(),
       rejected_at: Date.utc_today(),
-      rejected_by: UUID.generate(),
+      rejected_by: UUID.generate()
     }
   end
 
@@ -315,7 +352,7 @@ defmodule Report.Factory do
       is_active: true,
       code_atc: "C08CA0",
       updated_by: UUID.generate(),
-      inserted_by: UUID.generate(),
+      inserted_by: UUID.generate()
     }
   end
 
@@ -336,7 +373,7 @@ defmodule Report.Factory do
       name: "test",
       name_original: "test",
       inserted_by: UUID.generate(),
-      updated_by: UUID.generate(),
+      updated_by: UUID.generate()
     }
   end
 

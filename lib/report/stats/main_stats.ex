@@ -45,13 +45,14 @@ defmodule Report.Stats.MainStats do
       |> declaration_query()
       |> count_query()
 
-    {:ok, %{
-      "declarations" => declarations,
-      "doctors" => doctors,
-      "pharmacists" => pharmacists,
-      "msps" => msps,
-      "pharmacies" => pharmacies,
-    }}
+    {:ok,
+     %{
+       "declarations" => declarations,
+       "doctors" => doctors,
+       "pharmacists" => pharmacists,
+       "msps" => msps,
+       "pharmacies" => pharmacies
+     }}
   end
 
   def get_division_stats(id) do
@@ -75,14 +76,15 @@ defmodule Report.Stats.MainStats do
       |> declaration_query()
       |> count_query()
 
-    {:ok, %{
-      "division" => division,
-      "stats" => %{
-        "declarations" => declarations,
-        "msps" => msps,
-        "doctors" => doctors,
-      }
-    }}
+    {:ok,
+     %{
+       "division" => division,
+       "stats" => %{
+         "declarations" => declarations,
+         "msps" => msps,
+         "doctors" => doctors
+       }
+     }}
   end
 
   def get_regions_stats do
@@ -92,8 +94,8 @@ defmodule Report.Stats.MainStats do
          skeleton <- add_to_regions_skeleton(doctors_by_regions(), ["stats", "doctors"], skeleton),
          skeleton <- add_to_regions_skeleton(pharmacists_by_regions(), ["stats", "pharmacists"], skeleton),
          skeleton <- add_to_regions_skeleton(declarations_by_regions(), ["stats", "declarations"], skeleton),
-         skeleton <- add_to_regions_skeleton(medication_requests_by_regions(), ~w(stats medication_requests), skeleton)
-    do
+         keys <- ~w(stats medication_requests),
+         skeleton <- add_to_regions_skeleton(medication_requests_by_regions(), keys, skeleton) do
       {:ok, Map.values(skeleton)}
     end
   end
@@ -102,8 +104,7 @@ defmodule Report.Stats.MainStats do
     with %Ecto.Changeset{valid?: true} = changeset <- histogram_stats_changeset(%HistogramStatsRequest{}, params),
          histogram_stats_request <- apply_changes(changeset),
          skeleton <- histogram_stats_skeleton(histogram_stats_request),
-         skeleton <- histogram_stats_by_periods(histogram_stats_request, skeleton)
-    do
+         skeleton <- histogram_stats_by_periods(histogram_stats_request, skeleton) do
       {:ok, skeleton}
     end
   end
@@ -112,83 +113,94 @@ defmodule Report.Stats.MainStats do
     %{from_date: from_date, to_date: to_date, interval: interval} = histogram_stats_request
 
     active_declarations = active_declarations_by_date(from_date)
+
     created_declarations =
       Declaration
       |> interval_query(from_date, to_date)
       |> declarations_by_intervals(interval)
-      |> Repo.all
+      |> Repo.all()
       |> Enum.into(%{}, fn %{count: count, date: date} ->
         {date, count}
       end)
+
     closed_declarations =
       DeclarationStatusHistory
       |> interval_query(from_date, to_date)
       |> where([dsh], dsh.status in ~w(terminated closed))
       |> declarations_by_intervals(interval)
-      |> Repo.all
+      |> Repo.all()
       |> Enum.into(%{}, fn %{count: count, date: date} ->
         {date, count}
       end)
 
     active_medication_requests = active_medication_requests_by_date(from_date)
+
     created_medication_requests =
       MedicationRequest
       |> interval_query(from_date, to_date)
       |> medication_requests_by_intervals(interval)
-      |> Repo.all
+      |> Repo.all()
       |> Enum.into(%{}, fn %{count: count, date: date} ->
         {date, count}
       end)
+
     closed_medication_requests =
       MedicationRequestStatusHistory
       |> interval_query(from_date, to_date)
       |> where([mrsh], mrsh.status in ~w(COMPLETED))
       |> medication_requests_by_intervals(interval)
-      |> Repo.all
+      |> Repo.all()
       |> Enum.into(%{}, fn %{count: count, date: date} ->
         {date, count}
       end)
 
-      head =
-        skeleton
-        |> hd()
-        |> Map.put("declarations_active_start", active_declarations)
-        |> Map.put("medication_requests_active_start", active_medication_requests)
+    head =
+      skeleton
+      |> hd()
+      |> Map.put("declarations_active_start", active_declarations)
+      |> Map.put("medication_requests_active_start", active_medication_requests)
+
     skeleton = [head | List.delete_at(skeleton, 0)]
 
     {skeleton, _} =
       skeleton
-      |> Enum.with_index
+      |> Enum.with_index()
       |> Enum.reduce({skeleton, nil}, fn {%{"period_name" => date} = value, i}, {acc, previous} ->
-        declarations_active_start = if is_nil(previous),
-          do: Map.get(value, "declarations_active_start"),
-          else: Map.get(previous, "declarations_active_end")
+        declarations_active_start =
+          if is_nil(previous),
+            do: Map.get(value, "declarations_active_start"),
+            else: Map.get(previous, "declarations_active_end")
 
-        medication_requests_active_start = if is_nil(previous),
-          do: Map.get(value, "medication_requests_active_start"),
-          else: Map.get(previous, "medication_requests_active_end")
+        medication_requests_active_start =
+          if is_nil(previous),
+            do: Map.get(value, "medication_requests_active_start"),
+            else: Map.get(previous, "medication_requests_active_end")
 
         created_declarations = Map.get(created_declarations, date, 0)
         closed_declarations = Map.get(closed_declarations, date, 0)
-        declarations_active_end = declarations_active_start +
-          created_declarations - closed_declarations
+        declarations_active_end = declarations_active_start + created_declarations - closed_declarations
 
         created_medication_requests = Map.get(created_medication_requests, date, 0)
         closed_medication_requests = Map.get(closed_medication_requests, date, 0)
-        medication_requests_active_end = medication_requests_active_start +
-          created_medication_requests - closed_medication_requests
-        new_value = %{value |
-          "declarations_created" => created_declarations,
-          "declarations_closed" => closed_declarations,
-          "declarations_active_start" => declarations_active_start,
-          "declarations_active_end" => declarations_active_end,
-          "medication_requests_created" => created_medication_requests,
-          "medication_requests_closed" => closed_medication_requests,
-          "medication_requests_active_start" => medication_requests_active_start,
-          "medication_requests_active_end" => medication_requests_active_end
+
+        medication_requests_active_end =
+          medication_requests_active_start + created_medication_requests - closed_medication_requests
+
+        new_value = %{
+          value
+          | "declarations_created" => created_declarations,
+            "declarations_closed" => closed_declarations,
+            "declarations_active_start" => declarations_active_start,
+            "declarations_active_end" => declarations_active_end,
+            "medication_requests_created" => created_medication_requests,
+            "medication_requests_closed" => closed_medication_requests,
+            "medication_requests_active_start" => medication_requests_active_start,
+            "medication_requests_active_end" => medication_requests_active_end
         }
+
         {List.replace_at(acc, i, new_value), new_value}
       end)
+
     skeleton
   end
 
@@ -202,12 +214,15 @@ defmodule Report.Stats.MainStats do
 
   def histogram_stats_skeleton(%HistogramStatsRequest{} = request) do
     %{interval: interval, from_date: from_date, to_date: to_date} = request
-    intervals = Interval.new(
-      from: from_date,
-      until: to_date,
-      right_open: false,
-      step: interval_step(interval)
-    )
+
+    intervals =
+      Interval.new(
+        from: from_date,
+        until: to_date,
+        right_open: false,
+        step: interval_step(interval)
+      )
+
     Enum.map(intervals, fn date ->
       %{
         "period_type" => interval,
@@ -219,24 +234,25 @@ defmodule Report.Stats.MainStats do
         "medication_requests_created" => 0,
         "medication_requests_closed" => 0,
         "medication_requests_active_start" => 0,
-        "medication_requests_active_end" => 0,
+        "medication_requests_active_end" => 0
       }
     end)
   end
 
   defp regions_stats_skeleton(regions) do
     Enum.into(regions, %{}, fn region ->
-      {region.name, %{
-        "region" => region,
-        "stats" => %{
-          "declarations" => 0,
-          "doctors" => 0,
-          "msps" => 0,
-          "pharmacies" => 0,
-          "pharmacists" => 0,
-          "medication_requests" => 0,
-        }
-      }}
+      {region.name,
+       %{
+         "region" => region,
+         "stats" => %{
+           "declarations" => 0,
+           "doctors" => 0,
+           "msps" => 0,
+           "pharmacies" => 0,
+           "pharmacists" => 0,
+           "medication_requests" => 0
+         }
+       }}
     end)
   end
 
@@ -260,7 +276,7 @@ defmodule Report.Stats.MainStats do
     |> group_by([a], fragment("?->>'area'", a.address))
     |> where([a], fragment("?->>'type' = 'REGISTRATION'", a.address))
     |> select([a], %{region: fragment("?->>'area'", a.address), count: count(a.address)})
-    |> Repo.all
+    |> Repo.all()
   end
 
   defp doctors_by_regions do
@@ -286,7 +302,7 @@ defmodule Report.Stats.MainStats do
     |> group_by([a], fragment("?->>'area'", a.address))
     |> where([a], fragment("?->>'type' = 'REGISTRATION'", a.address))
     |> select([a], %{region: fragment("?->>'area'", a.address), count: count(a.address)})
-    |> Repo.all
+    |> Repo.all()
   end
 
   defp medication_requests_by_regions do
@@ -299,7 +315,7 @@ defmodule Report.Stats.MainStats do
     |> group_by([a], fragment("?->>'area'", a.address))
     |> where([a], fragment("?->>'type' = 'REGISTRATION'", a.address))
     |> select([a], %{region: fragment("?->>'area'", a.address), count: count(a.address)})
-    |> Repo.all
+    |> Repo.all()
   end
 
   defp declarations_by_regions do
@@ -312,7 +328,7 @@ defmodule Report.Stats.MainStats do
     |> group_by([a], fragment("?->>'area'", a.address))
     |> where([a], fragment("?->>'type' = 'REGISTRATION'", a.address))
     |> select([a], %{region: fragment("?->>'area'", a.address), count: count(a.address)})
-    |> Repo.all
+    |> Repo.all()
   end
 
   defp add_to_regions_skeleton(data, keys, skeleton) do
@@ -330,18 +346,23 @@ defmodule Report.Stats.MainStats do
     |> select([dsh, d], %{
       status: dsh.status,
       declaration_id: dsh.declaration_id,
-      x: fragment("""
-      rank() OVER (
-        PARTITION BY ?
-        ORDER BY ? DESC
-      )
-      """, dsh.declaration_id, dsh.inserted_at)
+      x:
+        fragment(
+          """
+          rank() OVER (
+            PARTITION BY ?
+            ORDER BY ? DESC
+          )
+          """,
+          dsh.declaration_id,
+          dsh.inserted_at
+        )
     })
     |> subquery()
     |> where([a], a.x == 1)
     |> declaration_query()
     |> select([a], count(a.declaration_id))
-    |> Repo.one!
+    |> Repo.one!()
   end
 
   defp active_medication_requests_by_date(date) do
@@ -351,18 +372,23 @@ defmodule Report.Stats.MainStats do
     |> select([mrsh, mr], %{
       status: mrsh.status,
       medication_request_id: mrsh.medication_request_id,
-      x: fragment("""
-      rank() OVER (
-        PARTITION BY ?
-        ORDER BY ? DESC
-      )
-      """, mrsh.medication_request_id, mrsh.inserted_at)
+      x:
+        fragment(
+          """
+          rank() OVER (
+            PARTITION BY ?
+            ORDER BY ? DESC
+          )
+          """,
+          mrsh.medication_request_id,
+          mrsh.inserted_at
+        )
     })
     |> subquery()
     |> where([a], a.x == 1)
     |> medication_request_query()
     |> select([a], count(a.medication_request_id))
-    |> Repo.one!
+    |> Repo.one!()
   end
 
   defp doctor_params do

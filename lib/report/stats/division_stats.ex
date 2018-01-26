@@ -22,8 +22,7 @@ defmodule Report.Stats.DivisionStats do
 
   def get_map_stats(params) do
     with %Ecto.Changeset{valid?: true} = changeset <- divisions_changeset(%DivisionsRequest{}, params),
-         divisions <- divisions_by_changeset(changeset, params)
-      do
+         divisions <- divisions_by_changeset(changeset, params) do
       {:ok, divisions}
     end
   end
@@ -31,14 +30,12 @@ defmodule Report.Stats.DivisionStats do
   def divisions_by_changeset(changeset, params) do
     Division
     |> select([d], d)
-    |> params_query(
-         %{
-           "id" => get_change(changeset, :id),
-           "type" => get_change(changeset, :type),
-           "status" => "ACTIVE",
-           "is_active" => true
-         }
-       )
+    |> params_query(%{
+      "id" => get_change(changeset, :id),
+      "type" => get_change(changeset, :type),
+      "status" => "ACTIVE",
+      "is_active" => true
+    })
     |> query_legal_entity_id(get_change(changeset, :legal_entity_id))
     |> query_name(get_change(changeset, :name))
     |> query_locations(changeset.changes)
@@ -47,13 +44,13 @@ defmodule Report.Stats.DivisionStats do
     |> query_legal_entity_name(get_change(changeset, :legal_entity_name))
     |> query_legal_entity_edrpou(get_change(changeset, :legal_entity_edrpou))
     |> join(
-         :inner,
-         [..., l],
-         e in Employee,
-         e.legal_entity_id == l.id and e.employee_type == ^@type_owner and e.is_active
-       )
+      :inner,
+      [..., l],
+      e in Employee,
+      e.legal_entity_id == l.id and e.employee_type == ^@type_owner and e.is_active
+    )
     |> join(:inner, [..., e], innm in assoc(e, :party))
-    |> preload([..., l, e, p], [legal_entity: {l, employees: {e, party: p}}])
+    |> preload([..., l, e, p], legal_entity: {l, employees: {e, party: p}})
     |> Repo.paginate(params)
   end
 
@@ -63,21 +60,20 @@ defmodule Report.Stats.DivisionStats do
   defp query_legal_entity_id(query, nil), do: query
   defp query_legal_entity_id(query, id), do: where(query, [d], d.legal_entity_id == ^id)
 
-  defp query_locations(
-         query,
-         %{
-           north: tlat,
-           east: tlong,
-           south: blat,
-           west: blong
-         }
-       ) do
+  defp query_locations(query, %{
+         north: tlat,
+         east: tlong,
+         south: blat,
+         west: blong
+       }) do
     where(query, fragment("location && ST_MakeEnvelope(?, ?, ?, ?, 4326)", ^tlong, ^tlat, ^blong, ^blat))
   end
+
   defp query_locations(query, _), do: query
 
   defp query_addresses(query, changes) do
     params = prepare_address_params(changes)
+
     if map_size(params) > 1 do
       where(query, [d], fragment("? @> ?", d.addresses, ^[params]))
     else
@@ -86,7 +82,7 @@ defmodule Report.Stats.DivisionStats do
   end
 
   defp prepare_address_params(changes) do
-    Enum.reduce(changes, %{"type" => @type_residence}, fn({key, val}, acc) ->
+    Enum.reduce(changes, %{"type" => @type_residence}, fn {key, val}, acc ->
       case key in @fields_address do
         true -> Map.put(acc, Atom.to_string(key), val)
         _ -> acc
@@ -95,11 +91,13 @@ defmodule Report.Stats.DivisionStats do
   end
 
   defp query_legal_entity_name(query, nil), do: query
+
   defp query_legal_entity_name(query, name) do
     where(query, [..., l], ilike(l.name, ^("%" <> name <> "%")))
   end
 
   defp query_legal_entity_edrpou(query, nil), do: query
+
   defp query_legal_entity_edrpou(query, edrpou) do
     where(query, [..., l], l.edrpou == ^edrpou)
   end

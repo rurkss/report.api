@@ -59,7 +59,7 @@ defmodule Report.Web.StatsView do
   def render("division.json", %{stats: division}) do
     %{
       "id" => division.id,
-      "name" => division.name,
+      "name" => division.name
     }
   end
 
@@ -72,7 +72,7 @@ defmodule Report.Web.StatsView do
       "coordinates" => render_coordinates(division.location),
       "contacts" => %{
         "email" => division.email,
-        "phones" => division.phones,
+        "phones" => division.phones
       },
       "legal_entity" => render_one(division.legal_entity, __MODULE__, "legal_entity.json", as: :legal_entity)
     }
@@ -81,7 +81,7 @@ defmodule Report.Web.StatsView do
   def render("region.json", %{stats: region}) do
     %{
       "id" => region.id,
-      "name" => region.name,
+      "name" => region.name
     }
   end
 
@@ -111,13 +111,14 @@ defmodule Report.Web.StatsView do
   defp render_coordinates(%{coordinates: {longitude, latitude}}) do
     %{
       "latitude" => latitude,
-      "longitude" => longitude,
+      "longitude" => longitude
     }
   end
+
   defp render_coordinates(_) do
     %{
       "latitude" => nil,
-      "longitude" => nil,
+      "longitude" => nil
     }
   end
 end

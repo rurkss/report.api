@@ -23,6 +23,7 @@ defmodule Report.Stats.DivisionStatsValidator do
     case locations_field_passed?(changeset.changes) do
       true ->
         geo_format = [less_than_or_equal_to: 90, greater_than_or_equal_to: -90]
+
         changeset
         |> validate_required(@fields_location)
         |> validate_number(:north, geo_format)

@@ -3,11 +3,16 @@ defmodule Report.MockServer do
 
   use Plug.Router
 
-  plug :match
-  plug Plug.Parsers, parsers: [:json],
-                     pass:  ["application/json"],
-                     json_decoder: Poison
-  plug :dispatch
+  plug(:match)
+
+  plug(
+    Plug.Parsers,
+    parsers: [:json],
+    pass: ["application/json"],
+    json_decoder: Poison
+  )
+
+  plug(:dispatch)
 
   post "/media_content_storage_secrets" do
     %{"secret" => %{"bucket" => bucket, "resource_id" => id, "resource_name" => name}} = conn.body_params

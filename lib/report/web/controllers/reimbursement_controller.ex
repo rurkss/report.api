@@ -7,7 +7,7 @@ defmodule Report.Web.ReimbursementController do
   alias Report.Stats.ReimbursementStatsCSV
   alias Scrivener.Page
 
-  action_fallback Report.Web.FallbackController
+  action_fallback(Report.Web.FallbackController)
 
   def index(%Plug.Conn{req_headers: headers} = conn, params) do
     with %Page{} = paging <- ReimbursementStats.get_stats(params, headers) do

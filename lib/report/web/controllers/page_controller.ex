@@ -4,9 +4,9 @@ defmodule Report.Web.PageController do
   """
   use Report.Web, :controller
 
-  action_fallback Report.Web.FallbackController
+  action_fallback(Report.Web.FallbackController)
 
   def index(conn, _params) do
-    render conn, "page.json"
+    render(conn, "page.json")
   end
 end

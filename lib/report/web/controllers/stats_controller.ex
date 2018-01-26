@@ -7,7 +7,7 @@ defmodule Report.Web.StatsController do
   alias Report.Stats.MainStats
   alias Scrivener.Page
 
-  action_fallback Report.Web.FallbackController
+  action_fallback(Report.Web.FallbackController)
 
   def index(conn, _params) do
     with {:ok, main_stats} <- MainStats.get_main_stats() do

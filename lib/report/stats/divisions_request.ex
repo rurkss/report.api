@@ -12,19 +12,19 @@ defmodule Report.Stats.DivisionsRequest do
   @type_drugstore_point "DRUGSTORE_POINT"
 
   schema "divisions" do
-    field :id, Ecto.UUID
-    field :type, :string
-    field :name, :string
-    field :area, :string
-    field :region, :string
-    field :settlement, :string
-    field :legal_entity_id, Ecto.UUID
-    field :legal_entity_name, :string
-    field :legal_entity_edrpou, :string
-    field :north, :float
-    field :east, :float
-    field :south, :float
-    field :west, :float
+    field(:id, Ecto.UUID)
+    field(:type, :string)
+    field(:name, :string)
+    field(:area, :string)
+    field(:region, :string)
+    field(:settlement, :string)
+    field(:legal_entity_id, Ecto.UUID)
+    field(:legal_entity_name, :string)
+    field(:legal_entity_edrpou, :string)
+    field(:north, :float)
+    field(:east, :float)
+    field(:south, :float)
+    field(:west, :float)
   end
 
   def type(:clinic), do: @type_clinic

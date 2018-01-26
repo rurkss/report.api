@@ -25,6 +25,7 @@ defmodule Report.Connection do
   end
 
   defp decode_client_metadata(nil), do: nil
+
   defp decode_client_metadata(metadata) do
     metadata
     |> Poison.decode()

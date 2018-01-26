@@ -1,14 +1,13 @@
 {:ok, _} = Application.ensure_all_started(:ex_machina)
 
-
 ExUnit.configure(exclude: [pending: true])
 ExUnit.start()
 Ecto.Adapters.SQL.Sandbox.mode(Report.Repo, :manual)
 
 defmodule GandalfMockServer do
   use Plug.Router
-  plug :match
-  plug :dispatch
+  plug(:match)
+  plug(:dispatch)
 
   post "/" do
     test_resp = """
@@ -22,10 +21,12 @@ defmodule GandalfMockServer do
       "description":null,"final_decision":"G9","request":{"mountain_group":false,"age":68},
       "created_at":"2017-07-28T13:35:47+0000","updated_at":"2017-07-28T13:35:47+0000"}}
     """
+
     conn
     |> put_resp_header("Content-Type", "text/xml")
     |> send_resp(200, test_resp)
   end
 end
-{:ok, _} = Plug.Adapters.Cowboy.http GandalfMockServer, [], port: 4000
-{:ok, _} = Plug.Adapters.Cowboy.http Report.MockServer, [], port: Confex.fetch_env!(:report_api, :mock)[:port]
+
+{:ok, _} = Plug.Adapters.Cowboy.http(GandalfMockServer, [], port: 4000)
+{:ok, _} = Plug.Adapters.Cowboy.http(Report.MockServer, [], port: Confex.fetch_env!(:report_api, :mock)[:port])

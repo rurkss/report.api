@@ -12,13 +12,14 @@ defmodule Report.Integration.DivisionStatsTest do
   describe "get_map_stats/1" do
     test "search clinics" do
       %{"division" => division} = insert_fixtures()
+
       params = %{
         name: division.name,
         type: DivisionsRequest.type(:clinic),
         east: 25,
         north: 45,
         west: 35,
-        south: 55,
+        south: 55
       }
 
       {:ok, %Page{entries: map_stats}} = DivisionStats.get_map_stats(params)
@@ -33,12 +34,13 @@ defmodule Report.Integration.DivisionStatsTest do
     test "search drugstores" do
       insert_fixtures()
       drugstore = DivisionsRequest.type(:drugstore)
+
       params = %{
         type: drugstore,
         east: 25,
         north: 45,
         west: 35,
-        south: 55,
+        south: 55
       }
 
       {:ok, %Page{entries: map_stats}} = DivisionStats.get_map_stats(params)
@@ -53,20 +55,23 @@ defmodule Report.Integration.DivisionStatsTest do
   defp insert_fixtures do
     legal_entity = insert(:legal_entity)
     insert(:employee, legal_entity: legal_entity, employee_type: Employee.type(:owner))
+
     params = [
       legal_entity_id: legal_entity.id,
       location: %Geo.Point{coordinates: {30.1233, 50.32423}},
       type: DivisionsRequest.type(:clinic),
       status: "ACTIVE",
       is_active: true,
-      name: "test name",
+      name: "test name"
     ]
+
     division = insert(:division, params)
     insert(:division, Keyword.put(params, :is_active, false))
     insert(:division, Keyword.put(params, :type, DivisionsRequest.type(:drugstore)))
+
     %{
       "division" => division,
-      "legal_entity" => legal_entity,
+      "legal_entity" => legal_entity
     }
   end
 end

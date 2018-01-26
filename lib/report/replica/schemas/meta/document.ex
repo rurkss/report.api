@@ -6,7 +6,7 @@ defmodule Report.Replica.Meta.Document do
   @primary_key false
 
   schema "documents" do
-    field :type, :string
-    field :number, :string
+    field(:type, :string)
+    field(:number, :string)
   end
 end

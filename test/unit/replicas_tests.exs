@@ -17,13 +17,17 @@ defmodule Report.Replica.ReplicasTest do
     end
 
     test "stream_declarations_beetween/0", %{declarations: declarations} do
-      stream = Replicas.stream_declarations_beetween(
+      stream =
+        Replicas.stream_declarations_beetween(
           List.first(declarations).inserted_at,
           List.last(declarations).inserted_at
-      )
-      {:ok, declarations} = Repo.transaction(fn() ->
-        Enum.to_list(stream)
-      end)
+        )
+
+      {:ok, declarations} =
+        Repo.transaction(fn ->
+          Enum.to_list(stream)
+        end)
+
       assert length(declarations) == 15
     end
 

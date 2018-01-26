@@ -23,11 +23,11 @@ defmodule Report.Stats.MainStatsValidator do
 
     with {:ok, changeset} <- compare_dates(changeset, from_date, to_date),
          {:ok, changeset} <- validate_date(changeset, from_date, interval, :start),
-         {:ok, changeset} <- validate_date(changeset, to_date, interval, :end)
-    do
+         {:ok, changeset} <- validate_date(changeset, to_date, interval, :end) do
       changeset
     end
   end
+
   defp validate_period(changeset), do: changeset
 
   defp compare_dates(changeset, from_date, to_date) do
@@ -38,24 +38,28 @@ defmodule Report.Stats.MainStatsValidator do
   end
 
   defp validate_date(changeset, _, "DAY", _), do: {:ok, changeset}
+
   defp validate_date(changeset, date, "MONTH", :start) do
     case Timex.compare(Timex.beginning_of_month(date), date) do
       0 -> {:ok, changeset}
       _ -> add_error(changeset, :from_date, "invalid period")
     end
   end
+
   defp validate_date(changeset, date, "MONTH", :end) do
     case Timex.compare(Timex.end_of_month(date), date) do
       0 -> {:ok, changeset}
       _ -> add_error(changeset, :from_date, "invalid period")
     end
   end
+
   defp validate_date(changeset, date, "YEAR", :start) do
     case Timex.compare(Timex.beginning_of_year(date), date) do
       0 -> {:ok, changeset}
       false -> add_error(changeset, :from_date, "invalid period")
     end
   end
+
   defp validate_date(changeset, date, "YEAR", :end) do
     case Timex.compare(Timex.end_of_year(date), date) do
       0 -> {:ok, changeset}

@@ -2,7 +2,6 @@ use Mix.Config
 
 # Configuration for test environment
 
-
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -21,8 +20,7 @@ config :report_api, Report.Web.Endpoint,
 
 config :phoenix, :stacktrace_depth, 20
 
-config :report_api,
-  validate_signed_content: false
+config :report_api, validate_signed_content: false
 
 config :report_api, Report.Repo,
   adapter: Ecto.Adapters.Postgres,

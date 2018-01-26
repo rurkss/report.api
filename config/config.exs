@@ -23,8 +23,7 @@ use Mix.Config
 # Or read environment variables in runtime (!) as:
 #
 #     :var_name, "${ENV_VAR_NAME}"
-config :report_api,
-  ecto_repos: [Report.Repo]
+config :report_api, ecto_repos: [Report.Repo]
 
 # Configure your database
 config :report_api, Report.Repo,
@@ -38,6 +37,7 @@ config :report_api, Report.Repo,
   pool_size: 20,
   types: Report.PostgresTypes,
   loggers: [{Ecto.LoggerJSON, :log, [:info]}]
+
 # This configuration file is loaded before any dependency and
 # is restricted to this project.
 
@@ -79,10 +79,11 @@ config :report_api, Report.MediaStorage,
     recv_timeout: {:system, :integer, "MEDIA_STORAGE_REQUEST_TIMEOUT", 30_000},
     timeout: {:system, :integer, "MEDIA_STORAGE_REQUEST_TIMEOUT", 30_000}
   ]
+
 # It is also possible to import configuration files, relative to this
 # directory. For example, you can emulate configuration per environment
 # by uncommenting the line below and defining dev.exs, test.exs and such.
 # Configuration from the imported file will override the ones defined
 # here (which is why it is important to import them last).
 #
-import_config "#{Mix.env}.exs"
+import_config "#{Mix.env()}.exs"
