@@ -5,6 +5,7 @@ defmodule Report.Web.StatsControllerTest do
   import Report.Web.Router.Helpers
   alias Report.Stats.HistogramStatsRequest
   alias Report.Replica.Employee
+  alias NExJsonSchema.Validator
 
   test "get main stats", %{conn: conn} do
     conn = get(conn, stats_path(conn, :index))
@@ -14,7 +15,7 @@ defmodule Report.Web.StatsControllerTest do
       |> File.read!()
       |> Poison.decode!()
 
-    :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
+    :ok = Validator.validate(schema, json_response(conn, 200))
   end
 
   test "get division stats", %{conn: conn} do
@@ -30,7 +31,7 @@ defmodule Report.Web.StatsControllerTest do
       |> File.read!()
       |> Poison.decode!()
 
-    :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
+    :ok = Validator.validate(schema, json_response(conn, 200))
   end
 
   test "get regions stats", %{conn: conn} do
@@ -40,11 +41,11 @@ defmodule Report.Web.StatsControllerTest do
       |> Poison.decode!()
 
     conn = get(conn, stats_path(conn, :regions))
-    :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
+    :ok = Validator.validate(schema, json_response(conn, 200))
 
     insert(:region)
     conn = get(conn, stats_path(conn, :regions))
-    :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
+    :ok = Validator.validate(schema, json_response(conn, 200))
   end
 
   test "get histogram stats", %{conn: conn} do
@@ -158,7 +159,7 @@ defmodule Report.Web.StatsControllerTest do
       |> File.read!()
       |> Poison.decode!()
 
-    :ok = NExJsonSchema.Validator.validate(schema, json_response(conn, 200))
+    :ok = Validator.validate(schema, json_response(conn, 200))
   end
 
   describe "get divisions" do
@@ -177,7 +178,7 @@ defmodule Report.Web.StatsControllerTest do
         |> File.read!()
         |> Poison.decode!()
 
-      :ok = NExJsonSchema.Validator.validate(schema, resp)
+      :ok = Validator.validate(schema, resp)
     end
 
     test "filter divisions by id", %{conn: conn} do
@@ -281,7 +282,7 @@ defmodule Report.Web.StatsControllerTest do
         |> File.read!()
         |> Poison.decode!()
 
-      :ok = NExJsonSchema.Validator.validate(schema, map_stats)
+      :ok = Validator.validate(schema, map_stats)
 
       assert 3 == Enum.count(map_stats["data"])
       assert is_map(map_stats["paging"])

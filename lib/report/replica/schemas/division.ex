@@ -15,6 +15,7 @@ defmodule Report.Replica.Division do
     field(:status, :string, null: false)
     field(:is_active, :boolean, default: false)
     field(:location, Geo.Geometry)
+    field(:working_hours, :map)
     belongs_to(:legal_entity, Report.Replica.LegalEntity, type: Ecto.UUID)
 
     timestamps(type: :utc_datetime)
