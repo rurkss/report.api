@@ -145,6 +145,12 @@
               "kveds",
               "owner"
             ]
+          },
+          "working_hours": {
+            "type": [
+              "null",
+              "object"
+            ]
           }
         },
         "required": [

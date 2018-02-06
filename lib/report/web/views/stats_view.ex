@@ -74,7 +74,8 @@ defmodule Report.Web.StatsView do
         "email" => division.email,
         "phones" => division.phones
       },
-      "legal_entity" => render_one(division.legal_entity, __MODULE__, "legal_entity.json", as: :legal_entity)
+      "legal_entity" => render_one(division.legal_entity, __MODULE__, "legal_entity.json", as: :legal_entity),
+      "working_hours" => division.working_hours
     }
   end
 
