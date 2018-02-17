@@ -10,6 +10,7 @@ defmodule Report.Stats.MainStats do
   alias Report.Replica.Region
   alias Report.Replica.MedicationRequest
   alias Report.Replica.MedicationRequestStatusHistory
+  alias Report.Replica.Person
   alias Report.Stats.HistogramStatsRequest
 
   import Ecto.Changeset, only: [apply_changes: 1]
@@ -107,6 +108,18 @@ defmodule Report.Stats.MainStats do
          skeleton <- histogram_stats_by_periods(histogram_stats_request, skeleton) do
       {:ok, skeleton}
     end
+  end
+
+  def get_persons_stat do
+    with  skeleton  <- regions_person_stats_skeleton(Repo.all(Region)),
+          data      <- persons_by_regions(),
+          skeleton  <- Enum.reduce(data, skeleton, fn person_data, acc ->
+                        if Map.has_key?(acc, person_data[:region]),
+                          do: put_in(acc, [person_data[:region], "stats"], Map.delete(person_data, :region)),
+                          else: acc
+                      end) do
+        {:ok, Map.values(skeleton)}
+      end
   end
 
   defp histogram_stats_by_periods(%HistogramStatsRequest{} = histogram_stats_request, skeleton) do
@@ -256,6 +269,22 @@ defmodule Report.Stats.MainStats do
     end)
   end
 
+  defp regions_person_stats_skeleton(regions) do
+    Enum.into(regions, %{}, fn region ->
+      {region.name,
+       %{
+         "region" => region,
+         "stats" => %{
+           "0-5": 0,
+           "6-17": 0,
+           "18-39": 0,
+           "40-64": 0,
+           ">65": 0
+         }
+       }}
+    end)
+  end
+
   defp msps_by_regions do
     LegalEntity
     |> params_query(msp_params())
@@ -329,6 +358,47 @@ defmodule Report.Stats.MainStats do
     |> where([a], fragment("?->>'type' = 'REGISTRATION'", a.address))
     |> select([a], %{region: fragment("?->>'area'", a.address), count: count(a.address)})
     |> Repo.all()
+  end
+
+  defmacro person_range_fragment(from, to, column) do
+    quote do
+      fragment(
+        """
+        SUM(
+          CASE
+            WHEN ? > ? AND ? < ?
+            THEN 1
+            ELSE 0
+          END
+        )
+        """,
+        unquote(column),
+        unquote(from),
+        unquote(column),
+        unquote(to)
+      )
+    end
+  end
+
+  defp persons_by_regions do
+    Person
+      |> where([p], fragment("? @> ?", p.addresses, ^[%{"type" => "REGISTRATION"}]))
+      |> select([p], %{
+        address: fragment("jsonb_array_elements(?)", p.addresses),
+        age: fragment("DATE_PART('year', now()::date) - DATE_PART('year', ?)", p.birth_date)
+        })
+      |> subquery()
+      |> group_by([a], fragment("?->>'area'", a.address))
+      |> where([a], fragment("?->>'type' = 'REGISTRATION'", a.address))
+      |> select([a], %{
+        region: fragment("?->>'area'", a.address),
+        "6-17": person_range_fragment(5, 18, a.age),
+        "18-39": person_range_fragment(17, 40, a.age),
+        "40-64": person_range_fragment(39, 65, a.age),
+        ">65": person_range_fragment(64, 122, a.age), # 122 - thanks to Jeanne Calment
+        "0-5": person_range_fragment(-1, 6, a.age)
+        })
+      |> Repo.all()
   end
 
   defp add_to_regions_skeleton(data, keys, skeleton) do
