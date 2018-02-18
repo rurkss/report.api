@@ -396,7 +396,7 @@ defmodule Report.Stats.MainStats do
         "18-39": person_range_fragment(17, 40, a.age),
         "40-64": person_range_fragment(39, 65, a.age),
         ">65": person_range_fragment(64, 122, a.age), # 122 - thanks to Jeanne Calment
-        "0-5": person_range_fragment(-1, 6, a.age)
+        "0-5": person_range_fragment(- 1, 6, a.age)
         })
       |> Repo.all()
   end

@@ -321,8 +321,9 @@ defmodule Report.Integration.MainStatsTest do
     insert(:region, name: "ЛЬВІВСЬКА")
     insert(:region, name: "ЧЕРНІВЕЦЬКА")
 
-    Map.values(person_ranges)
-    |> List.flatten
+    person_ranges
+    |> Map.values()
+    |> List.flatten()
     |> Enum.each(
       &(insert(:person,
       addresses: [
