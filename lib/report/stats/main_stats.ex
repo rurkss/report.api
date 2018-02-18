@@ -383,6 +383,7 @@ defmodule Report.Stats.MainStats do
   defp persons_by_regions do
     Person
       |> where([p], fragment("? @> ?", p.addresses, ^[%{"type" => "REGISTRATION"}]))
+      |> where([p], is_nil(p.death_date))
       |> select([p], %{
         address: fragment("jsonb_array_elements(?)", p.addresses),
         age: fragment("DATE_PART('year', now()::date) - DATE_PART('year', ?)", p.birth_date)
