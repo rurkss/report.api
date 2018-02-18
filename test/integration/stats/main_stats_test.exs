@@ -334,6 +334,16 @@ defmodule Report.Integration.MainStatsTest do
         birth_date: DateTime.to_date(Timex.shift(DateTime.utc_now(), years: -&1)) ))
       )
 
+    # adding one person who is dead
+    insert(:person,
+      addresses: [
+        %{
+          area: "ЛЬВІВСЬКА",
+          type: "REGISTRATION"
+        }],
+        death_date: DateTime.to_date(Timex.shift(DateTime.utc_now(), years: -2)),
+        birth_date: DateTime.to_date(Timex.shift(DateTime.utc_now(), years: -42)))
+
     {:ok, main_stats} = MainStats.get_persons_stat()
 
     # test against not empty result
