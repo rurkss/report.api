@@ -311,7 +311,7 @@ defmodule Report.Integration.MainStatsTest do
   test "get_person_age_stat/0" do
 
     person_ranges  = %{
-      "0-5": [1,2,5],
+      "0-5": [1, 2, 5],
       "6-17": [6],
       "18-39": [18, 31, 39],
       "40-64": [40],
@@ -322,30 +322,36 @@ defmodule Report.Integration.MainStatsTest do
     insert(:region, name: "ЧЕРНІВЕЦЬКА")
 
     Map.values(person_ranges)
-      |> List.flatten
-      |> Enum.each(
-        &(insert(:person,
-        addresses: [
-          %{
-            area: "ЛЬВІВСЬКА",
-            type: "REGISTRATION"
-          }],
-          birth_date: DateTime.to_date(Timex.shift(DateTime.utc_now(), years: -&1)) ))
-        )
+    |> List.flatten
+    |> Enum.each(
+      &(insert(:person,
+      addresses: [
+        %{
+          area: "ЛЬВІВСЬКА",
+          type: "REGISTRATION"
+        }],
+        birth_date: DateTime.to_date(Timex.shift(DateTime.utc_now(), years: -&1)) ))
+      )
 
     {:ok, main_stats} = MainStats.get_persons_stat()
 
     # test against not empty result
-    %{"region" => _, "stats" => stats} = Enum.find(main_stats, fn(p_region) -> p_region["region"].name == "ЛЬВІВСЬКА" end)
+    %{"region" => _, "stats" => stats} = Enum.find(main_stats,
+      fn(p_region) ->
+        p_region["region"].name == "ЛЬВІВСЬКА"
+      end)
     Enum.each(person_ranges,
-      fn {k,v} ->
+      fn {k, v} ->
         assert Enum.count(v) == stats[k]
       end)
 
     # test against empty result
-    %{"region" => _, "stats" => stats} = Enum.find(main_stats, fn(p_region) -> p_region["region"].name == "ЧЕРНІВЕЦЬКА" end)
+    %{"region" => _, "stats" => stats} = Enum.find(main_stats,
+      fn(p_region) ->
+        p_region["region"].name == "ЧЕРНІВЕЦЬКА"
+      end)
     Enum.each(person_ranges,
-    fn {k,_v} ->
+    fn {k, _v} ->
       assert 0 == stats[k]
     end)
   end
