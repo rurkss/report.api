@@ -311,11 +311,11 @@ defmodule Report.Integration.MainStatsTest do
   test "get_person_age_stat/0" do
 
     person_ranges  = %{
-      "0-5": [1, 2, 5],
-      "6-17": [6],
-      "18-39": [18, 31, 39],
-      "40-64": [40],
-      ">65": [70, 100]
+      "0-5" => [1, 2, 5],
+      "6-17" => [6],
+      "18-39" => [18, 31, 39],
+      "40-64" => [40],
+      ">65" => [70, 100]
     }
 
     insert(:region, name: "ЛЬВІВСЬКА")
@@ -351,6 +351,7 @@ defmodule Report.Integration.MainStatsTest do
       fn(p_region) ->
         p_region["region"].name == "ЛЬВІВСЬКА"
       end)
+
     Enum.each(person_ranges,
       fn {k, v} ->
         assert Enum.count(v) == stats[k]
