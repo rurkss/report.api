@@ -10,7 +10,6 @@ defmodule Report.Stats.MainStats do
   alias Report.Replica.Region
   alias Report.Replica.MedicationRequest
   alias Report.Replica.MedicationRequestStatusHistory
-  alias Report.Replica.Person
   alias Report.Stats.HistogramStatsRequest
 
   import Ecto.Changeset, only: [apply_changes: 1]
@@ -114,8 +113,8 @@ defmodule Report.Stats.MainStats do
     with  skeleton  <- regions_person_stats_skeleton(Repo.all(Region)),
           data      <- persons_by_regions(),
           skeleton  <- Enum.reduce(data, skeleton, fn person_data, acc ->
-                        if Map.has_key?(acc, person_data[:region]),
-                          do: put_in(acc, [person_data[:region], "stats"], Map.delete(person_data, :region)),
+                        if Map.has_key?(acc, person_data["region"]),
+                          do: put_in(acc, [person_data["region"], "stats"], Map.delete(person_data, "region")),
                           else: acc
                       end) do
         {:ok, Map.values(skeleton)}
@@ -275,11 +274,11 @@ defmodule Report.Stats.MainStats do
        %{
          "region" => region,
          "stats" => %{
-           "0-5": 0,
-           "6-17": 0,
-           "18-39": 0,
-           "40-64": 0,
-           ">65": 0
+           "0-5" => 0,
+           "6-17" => 0,
+           "18-39" => 0,
+           "40-64" => 0,
+           ">65" => 0
          }
        }}
     end)
@@ -360,46 +359,29 @@ defmodule Report.Stats.MainStats do
     |> Repo.all()
   end
 
-  defmacro person_range_fragment(from, to, column) do
-    quote do
-      fragment(
-        """
-        SUM(
-          CASE
-            WHEN ? > ? AND ? < ?
-            THEN 1
-            ELSE 0
-          END
-        )
-        """,
-        unquote(column),
-        unquote(from),
-        unquote(column),
-        unquote(to)
-      )
-    end
-  end
-
   defp persons_by_regions do
-    Person
-      |> where([p], fragment("? @> ?", p.addresses, ^[%{"type" => "REGISTRATION"}]))
-      |> where([p], is_nil(p.death_date))
-      |> select([p], %{
-        address: fragment("jsonb_array_elements(?)", p.addresses),
-        age: fragment("DATE_PART('year', now()::date) - DATE_PART('year', ?)", p.birth_date)
-        })
-      |> subquery()
-      |> group_by([a], fragment("?->>'area'", a.address))
-      |> where([a], fragment("?->>'type' = 'REGISTRATION'", a.address))
-      |> select([a], %{
-        region: fragment("?->>'area'", a.address),
-        "6-17": person_range_fragment(5, 18, a.age),
-        "18-39": person_range_fragment(17, 40, a.age),
-        "40-64": person_range_fragment(39, 65, a.age),
-        ">65": person_range_fragment(64, 122, a.age), # 122 - thanks to Jeanne Calment
-        "0-5": person_range_fragment(- 1, 6, a.age)
-        })
-      |> Repo.all()
+
+    query = "SELECT b.address->>'area' AS region,
+        COUNT(*) FILTER (WHERE age < 6) AS \"0-5\",
+        COUNT(*) FILTER (WHERE age between 6 and 17) AS \"6-17\",
+        COUNT(*) FILTER (WHERE age between 18 and 39) AS \"18-39\",
+        COUNT(*) FILTER (WHERE age between 40 and 64) AS \"40-64\",
+        COUNT(*) FILTER (WHERE age > 64) AS \">65\"
+        FROM (
+        SELECT jsonb_array_elements(addresses) AS address,
+          extract(YEAR from age(now(), birth_date)) AS age FROM persons
+          WHERE death_date is null
+          AND addresses @> '[{\"type\": \"REGISTRATION\"}]'
+          ) AS b
+          GROUP BY b.address->>'area';"
+
+    result = Ecto.Adapters.SQL.query!(Repo, query)
+
+    result.rows
+      |> Enum.map(
+        &(Enum.zip(result.columns, &1))
+          |> Enum.into(%{})
+        )
   end
 
   defp add_to_regions_skeleton(data, keys, skeleton) do
