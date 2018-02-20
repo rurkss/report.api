@@ -370,7 +370,9 @@ defmodule Report.Stats.MainStats do
         FROM (
         SELECT jsonb_array_elements(addresses) AS address,
           extract(YEAR from age(now(), birth_date)) AS age FROM persons
-          WHERE death_date is null) AS b
+          WHERE death_date is null
+          AND addresses @> '[{\"type\": \"REGISTRATION\"}]'
+          ) AS b
           GROUP BY b.address->>'area';"
 
     result = Ecto.Adapters.SQL.query!(Repo, query)
